@@ -1,0 +1,27 @@
+default: &default
+  adapter: mysql2
+  encoding: utf8
+  username: <%= ENV["MYSQL_USER"] %>
+  password: <%= ENV["MYSQL_PASSWORD"] %>
+  host: <%= ENV["MYSQL_HOST"] %>
+  port: 3306
+
+
+
+development:
+  <<: *default
+  database:  <%= ENV["MYSQL_DATABASE_DEV"] %>
+
+test:
+  <<: *default
+  database:  <%= ENV["MYSQL_DATABASE_TEST"] %>
+
+#
+# test:
+#   <<: *default
+#   database: <%= ENV["MYSQL_DATABASE_TEST"] %>
+#
+#
+# production:
+#   <<: *default
+#   database: <%= ENV["MYSQL_DATABASE_PROD"] %>
