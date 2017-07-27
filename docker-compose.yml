@@ -1,0 +1,75 @@
+version: '3'
+
+services:
+  # nginx:
+  #   image: nginx
+  #   depends_on:
+  #     - api
+  #   ports:
+  #     - "80:8080"
+  #   networks:
+  #     - phototankswarm
+  #   env_file: .env.dev
+  #   volumes:
+  #     - ./frontend/nginx/conf.d:/etc/nginx/conf.d
+  #     - ./frontend/public:/www
+
+  db:
+    image: mysql
+    env_file: .env.dev
+    networks:
+      - phototankswarm
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./sql:/var/lib/mysql
+
+  redis:
+    image: redis
+    networks:
+      - phototankswarm
+
+  api:
+    tty: true
+    stdin_open: true
+    image: pt-rails:v12
+    env_file: .env.dev
+    networks:
+      - phototankswarm
+    entrypoint: ./bin/rails.sh
+    volumes:
+      - /Users/martinhinge/Pictures/docker/phototank:/media/phototank
+      - ./pt_api:/usr/src/app
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
+      - redis
+
+
+  resque:
+    tty: true
+    stdin_open: true
+    entrypoint: ./bin/resque.sh
+    image: pt-rails:v12
+    volumes:
+      - /Users/martinhinge/Pictures/docker/phototank:/media/phototank
+      - ./pt_api:/usr/src/app
+    networks:
+      - phototankswarm
+    links:
+      - redis
+    env_file: .env.dev
+
+  portainer:
+    image:
+      portainer/portainer
+    ports:
+      - "9000:9000"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    networks:
+      - phototankswarm
+
+networks:
+  phototankswarm:
