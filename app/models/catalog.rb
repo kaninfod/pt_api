@@ -19,7 +19,7 @@ class Catalog < ActiveRecord::Base
 
   def cover_url
     if self.photos.count > 0
-      self.photos.first.url('md')
+      self.photos.first.url_md
     else
       Photo.null_photo
     end

@@ -4,54 +4,24 @@ module Api
     set_pagination_headers :photos, only: [:index]
     before_action :set_photo, only: [:destroy, :rotate, :show, :add_to_album, :addtag, :removetag, :add_comment, :like]
 
+
+    #GET /api/photos/
     def index
-      album_hash = {}
-      @searchparams = {}
-
-      if params.has_key? :direction
-        case params[:direction]
-          when "true"
-            album_hash[:start_date] = params[:startdate]
-            @searchparams[:direction] = "true"
-            order = "asc"
-          when "false"
-            album_hash[:end_date] = params[:startdate]
-            @searchparams[:direction] = "false"
-            order = "desc"
-        end
-      else
-        order = "desc"
-        album_hash[:end_date] = params[:startdate]
-        @searchparams[:direction] = "false"
-      end
-
-      if params.has_key? "country"
-        album_hash[:country] = params[:country] unless params[:country] == "-1"
-      end
-
-      if params.has_key? "like"
-        album_hash[:like] = params[:like]
-      end
-
-      if params.has_key? "tags"
-        if params[:tags].is_a?(Array)
-          tags = params[:tags].map{|t| ActsAsTaggableOn::Tag.all.where(name: t).first.id}
-          album_hash[:tags] = tags
-        end
-      end
-
-      @album = Album.new(album_hash)
+      # @searchparams = {}
+      @album_hash = {}
+      @order = "desc"
+      @album = Album.new(get_album_hash)
       #Get photos
-      @photos = @album.album_photos.where('photos.status != ? or photos.status is ?', 1, nil).order(date_taken: order).paginate(:page => params[:page], :per_page=>60)
+      @photos = @album.album_photos.where('photos.status != ? or photos.status is ?', 1, nil).order(date_taken: @order).paginate(:page => params[:page], :per_page=>60)
       @bucket_ids = Bucket.where(user: @current_user.id).pluck(:id)
-      puts "p count: #{@photos.count}"
-      render json: @photos
+      render json: @photos, each_serializer: SimplePhotoSerializer
     end
 
     def show
       @bucket = session[:bucket]
       @taglist = ActsAsTaggableOn::Tag.all
       @albums = Album.all
+      render json: @photo, serializer: CompletePhotoSerializer
     end
 
     def destroy
@@ -82,6 +52,13 @@ module Api
       end
       render :json => {:likes => @photo.votes_for.size, :liked_by_current_user => (current_user.voted_for? @photo)}
     end
+
+    #GET /api/photos/taglist
+    def taglist
+      @taglist = ActsAsTaggableOn::Tag.all
+      render json: @taglist, each_serializer: TaglistSerializer
+    end
+
 
     def addtag
       if params[:name][0,1] == "@"
@@ -125,5 +102,53 @@ module Api
       def photo_params
         params.require(:photo).permit(:filename, :date_taken, :path, :file_thumb_path, :file_extension, :file_size, :location_id, :make, :model, :original_height, :original_width, :longitude, :latitude)
       end
+
+      def get_album_hash
+        set_sort_direction
+        set_country
+        set_like
+        set_tags
+      end
+
+      def set_sort_direction()
+        if params.has_key? :direction
+          case params[:direction]
+            when "true"
+              @album_hash[:start_date] = params[:startdate]
+              # @searchparams[:direction] = "true"
+              @order = "asc"
+            when "false"
+              @album_hash[:end_date] = params[:startdate]
+              # @searchparams[:direction] = "false"
+              @order = "desc"
+          end
+        else
+          @order = "desc"
+          @album_hash[:end_date] = params[:startdate]
+          # @searchparams[:direction] = "false"
+        end
+      end
+
+      def set_country
+        if params.has_key? "country"
+          @album_hash[:country] = params[:country] unless params[:country] == "-1"
+        end
+      end
+
+      def set_like
+        if params.has_key? "like"
+          @album_hash[:like] = params[:like]
+        end
+      end
+
+      def set_tags
+        if params.has_key? "tags"
+          if params[:tags].is_a?(Array)
+            tags = params[:tags].map{|t| ActsAsTaggableOn::Tag.all.where(name: t).first.id}
+            @album_hash[:tags] = tags
+          end
+        end
+      end
+
   end
 end

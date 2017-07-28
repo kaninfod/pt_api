@@ -16,6 +16,7 @@ Rails.application.routes.draw do
     get '/photos/:id/rotate/(:degrees)' => 'photos#rotate'
     post '/photos/:id/add_comment' => 'photos#add_comment'
     get '/photos/:id/like' => 'photos#like'
+    get '/photos/taglist' => 'photos#taglist'
     get '/photos/:id/addtag' => 'photos#addtag'
     get '/photos/:id/removetag' => 'photos#removetag'
 

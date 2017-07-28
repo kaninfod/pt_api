@@ -8,8 +8,8 @@ module Api
 
 
     def index
-        @catalogs = Catalog.order(:id).page params[:page]
-        render json: @catalogs
+      @catalogs = Catalog.order(:id).page params[:page]
+      render json: @catalogs
     end
 
     def show

@@ -20,13 +20,31 @@ RSpec.describe Api::PhotosController, type: :controller do
     request.headers.merge! authenticated_header()
 
     #execute
-    get :index, :format => :json
+    get :index, :format => :json, params: {:startdate =>  Date.today}
     parsed_response = JSON.parse(response.body)
-    puts "photos: #{parsed_response}"
+
 
     # verify
     expect(response).to be_success
-    expect(parsed_response.count).to eq(3)
+    # expect(parsed_response.count).to eq(3)
+  end
+
+
+  it "returns all tags" do
+    #setup
+    photo = FactoryGirl.create(:photo)
+    photo.tag_list.add "my_tag_1"
+    photo.tag_list.add "my_tag_2"
+    photo.save
+    request.headers.merge! authenticated_header()
+
+    #execute
+    get :taglist, :format => :json
+    parsed_response = JSON.parse(response.body)
+
+    # verify
+    expect(response).to be_success
+    expect(parsed_response.count).to eq(2)
   end
 
   # it "returns no albums" do
