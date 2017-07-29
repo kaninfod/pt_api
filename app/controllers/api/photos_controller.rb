@@ -12,15 +12,12 @@ module Api
       @order = "desc"
       @album = Album.new(get_album_hash)
       #Get photos
-      @photos = @album.album_photos.where('photos.status != ? or photos.status is ?', 1, nil).order(date_taken: @order).paginate(:page => params[:page], :per_page=>60)
-      @bucket_ids = Bucket.where(user: @current_user.id).pluck(:id)
+      @photos = @album.album_photos.where('photos.status != ? or photos.status is ?', 1, nil).includes(:bucket).order(date_taken: @order).paginate(:page => params[:page], :per_page=>60)
       render json: @photos, each_serializer: SimplePhotoSerializer
     end
 
     def show
-      @bucket = session[:bucket]
-      @taglist = ActsAsTaggableOn::Tag.all
-      @albums = Album.all
+      # @photo = Photo.find_by_id(params[:id]).includes(:tags)
       render json: @photo, serializer: CompletePhotoSerializer
     end
 
@@ -58,7 +55,6 @@ module Api
       @taglist = ActsAsTaggableOn::Tag.all
       render json: @taglist, each_serializer: TaglistSerializer
     end
-
 
     def addtag
       if params[:name][0,1] == "@"

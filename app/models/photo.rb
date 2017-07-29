@@ -9,7 +9,7 @@ class Photo < ActiveRecord::Base
   has_many :instances
   has_many :catalogs, through: :instances
   has_one :bucket
-  has_many :jobs, as: :jobable
+  has_many :jobs, as: :jobable  
 
   acts_as_commentable
   acts_as_votable
@@ -45,7 +45,6 @@ class Photo < ActiveRecord::Base
   def date_taken_is_valid_datetime
     if ((DateTime.parse(date_taken.to_s) rescue ArgumentError) == ArgumentError)
       errors.add(:date_taken, 'must be a valid datetime')
-      puts "you fucked up"
     end
   end
 

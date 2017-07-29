@@ -16,18 +16,38 @@ RSpec.describe Api::PhotosController, type: :controller do
 
   it "returns all photos" do
     #setup
-    FactoryGirl.create_list(:photo, 3)
     request.headers.merge! authenticated_header()
+    p = FactoryGirl.create_list(:photo, 3)
 
     #execute
     get :index, :format => :json, params: {:startdate =>  Date.today}
     parsed_response = JSON.parse(response.body)
 
-
     # verify
     expect(response).to be_success
     # expect(parsed_response.count).to eq(3)
   end
+
+  it "returns all photos, one in bucket" do
+    #setup
+    request.headers.merge! authenticated_header()
+    p1 = FactoryGirl.create(:photo)
+    p2 = FactoryGirl.create(:photo )
+    Bucket.create( photo: p2, user: User.first)
+
+    #execute
+    get :index, :format => :json, params: {:startdate =>  Date.today}
+    parsed_response = JSON.parse(response.body)
+
+    # verify
+    expect(response).to be_success
+    p1_json = parsed_response.select {|p| p["id"] == p1.id }
+    p2_json = parsed_response.select {|p| p["id"] == p2.id }
+    puts p2_json
+    expect(p1_json.first["bucket"]).to be_falsy
+    expect(p2_json.first["bucket"]).to be_truthy
+  end
+
 
 
   it "returns all tags" do
@@ -45,6 +65,38 @@ RSpec.describe Api::PhotosController, type: :controller do
     # verify
     expect(response).to be_success
     expect(parsed_response.count).to eq(2)
+  end
+
+  it "returns one photo with tags" do
+    #setup
+    request.headers.merge! authenticated_header()
+    p = FactoryGirl.create(:photo)
+    p.tag_list = "awesome, slick, hefty"
+    p.save
+
+    #execute
+    get :show, :format => :json, params: {:id =>  p.id}
+    parsed_response = JSON.parse(response.body)
+
+    # verify
+    expect(response).to be_success
+    expect(parsed_response["tags"].size).to eq(3)
+  end
+
+  it "returns one photo which is liked" do
+    #setup
+    request.headers.merge! authenticated_header()
+    p = FactoryGirl.create(:photo)
+    p.liked_by User.last
+
+
+    #execute
+    get :show, :format => :json, params: {:id =>  p.id}
+    parsed_response = JSON.parse(response.body)
+    byebug
+    # verify
+    expect(response).to be_success
+    expect(parsed_response["tags"].size).to eq(3)
   end
 
   # it "returns no albums" do
