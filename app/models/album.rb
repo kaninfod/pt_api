@@ -3,6 +3,7 @@ class Album < ActiveRecord::Base
   serialize :tags, Array
   has_and_belongs_to_many :photos, -> { distinct }
   validates :name, presence: true
+  after_initialize :set_default_values
 
   def count
     return photos.count
@@ -25,39 +26,56 @@ class Album < ActiveRecord::Base
   def album_photos
     result = Photo
                 .joins(join_location)
-                .joins(join_tagging)
-                .joins(join_vote)
                 .joins(join_album_photo)
+                .joins(join_facet)
                 .where(conditions)
                 .distinct(:id)
+
+                # .joins(join_vote)
     # result_p = self.photos
     # result_p + result
   end
 
   def conditions
-    exp = false
-    expressions = [
-      [:_start_date,     "and"],
-      [:_end_date,       "and"],
-      [:_country,   "and"],
-      [:_city,      "and"],
-      [:_make,      "and"],
-      [:_tagging,   "and"],
-      [:_vote,      "and"],
-      [:_album,     "or"],
-      # [:_photo_ids,  "or"]
+    photo_rules = [
+      { :operator => "and", :method => :_start_date },
+      { :operator => "and", :method => :_start_date },
+      { :operator => "and", :method => :_end_date   },
+      { :operator => "and", :method => :_country    },
+      { :operator => "and", :method => :_city       },
+      { :operator => "and", :method => :_make       },
+      { :operator => "or" , :method => :_album      },
     ]
 
-    expressions.each do |method, operator|
-      n = send(method)
-      if n != nil
+    facet_rules = [
+      { :operator => "and", :method => :_like       },
+      { :operator => "or" , :method => :_has_comment},
+    ]
+
+    photo = process_rules(photo_rules)
+    facet = process_rules(facet_rules)
+
+    if !facet
+        expression = photo
+    else
+      expression = photo.and(facet)
+    end
+
+    return expression
+  end
+
+  def process_rules(rules)
+    exp = false
+    rules.each do |rule|
+      res = send(rule[:method])
+      if res != nil
         if !exp
-          exp = n
+          exp = res
         else
-          if operator == "and"
-            exp = exp.and(n)
-          elsif operator == "or"
-            exp = exp.or(n)
+          if rule[:operator] == "and"
+            exp = exp.and(res)
+          elsif rule[:operator] == "or"
+            exp = exp.or(res)
           end
         end
       end
@@ -86,18 +104,16 @@ class Album < ActiveRecord::Base
     t_photo[:make].eq(self.make) unless self.make.blank?
   end
 
-  # def _photo_ids
-  #   t_photo[:id].in(self.photo_ids) unless self.photo_ids.length == 0
-  # end
-
   def _tagging
     t_tagging[:tag_id].in(self.tags) unless self.tags.length == 0
   end
 
-  def _vote
-    if self.like == true
-      t_vote[:votable_id].gt(0)
-    end
+  def _like
+    t_facet[:type].eq("Like") unless self.like == false
+  end
+
+  def _has_comment
+    t_facet[:type].eq("Comment") unless self.has_comment == false
   end
 
   def _album
@@ -114,9 +130,9 @@ class Album < ActiveRecord::Base
     t_photo.create_join(t_tagging, constraint_tagging, Arel::Nodes::OuterJoin)
   end
 
-  def join_vote
-    constraint_vote = t_vote.create_on(t_photo[:id].eq(t_vote[:votable_id]))
-    t_photo.create_join(t_vote, constraint_vote, Arel::Nodes::OuterJoin)
+  def join_facet
+    constraint_facet = t_facet.create_on(t_photo[:id].eq(t_facet[:photo_id]))
+    t_photo.create_join(t_facet, constraint_facet, Arel::Nodes::OuterJoin)
   end
 
   def join_album_photo
@@ -136,147 +152,75 @@ class Album < ActiveRecord::Base
     Location.arel_table
   end
 
-  def t_vote
-    Vote.arel_table
+  def t_facet
+    Facet.arel_table
   end
 
   def t_tagging
     Tagging.arel_table
   end
 
-
-  # def photos
-  #
-  #   if not self.start.blank?
-  #     date_start = self.start.to_datetime
-  #     p_start = get_predicate('date_taken', date_start, :gteq)
-  #     exp = p_start
-  #   end
-  #
-  #   if not self.end.blank?
-  #     date_end = self.end.to_time + 25.hours - 1.seconds
-  #     p_end = get_predicate('date_taken', date_end, :lteq)
-  #     if not exp.blank?
-  #       exp = exp&p_end
-  #     else
-  #       exp= p_end
-  #     end
-  #   end
-  #
-  #   if not self.make.blank?
-  #     p_make = get_predicate('make', self.make, :eq)
-  #     if not exp.blank?
-  #       exp = exp&p_make
-  #     else
-  #       exp = p_make
-  #     end
-  #   end
-  #
-  #   if not self.model.blank?
-  #     p_model = get_predicate('model', self.model, :eq)
-  #     if not exp.blank?
-  #       exp = exp&p_model
-  #     else
-  #       exp = p_model
-  #     end
-  #   end
-  #
-  #   location_stub = Squeel::Nodes::Stub.new(:location)
-  #
-  #   if not self.country.blank?
-  #     p_country = get_predicate(:country, self.country, :eq)
-  #     k_country = Squeel::Nodes::KeyPath.new([location_stub, p_country])
-  #     if not exp.blank?
-  #       exp = exp&k_country
-  #     else
-  #       exp = k_country
-  #     end
-  #   end
-  #
-  #   if not self.city.blank?
-  #     p_city = get_predicate('city', self.city, :eq)
-  #     k_city = Squeel::Nodes::KeyPath.new([location_stub, p_city])
-  #     if not exp.blank?
-  #       exp = exp&k_city
-  #     else
-  #       exp = k_city
-  #     end
-  #   end
-  #
-  #   if not self.photo_ids.blank?
-  #     p_photo_ids = get_predicate('id', self.photo_ids, :in)
-  #     if not exp.blank?
-  #       exp = exp|p_photo_ids
-  #     else
-  #       exp = p_photo_ids
-  #     end
-  #   end
-  #
-  #   Photo.joins(:location).where(exp)
-  #
-  # end
-
-  def self.generate_year_based_albums
-    distinct_years = Photo.pluck(:date_taken).map{|x| x.year}.uniq.each do |rec|
-      album = Album.new
-      album.name =  rec.to_s
-      album.start_date = Date.new(rec.to_i, 1, 1)
-      album.end_date = Date.new(rec.to_i, 12, 31)
-      album.album_type = "year"
-      album.save
-    end
-  end
-
-  def self.generate_month_based_albums
-    distinct_months = Photo.pluck(:date_taken).map{|x| Date.new(x.year, x.month, 1)}.uniq.each do |rec|
-      album = Album.new
-      album.name = rec.strftime("%b %Y").to_s
-      album.start_date = rec
-      album.end_date = (rec >> 1) -1
-      album.album_type = "month"
-      album.save
-    end
-  end
-
-  def self.generate_inteval_based_albums(inteval=10, density=10)
-    inteval = inteval*60
-    albums=[]
-
-    Photo.all.order(:date_taken).each do |photo|
-
-      flag ||= false
-      albums.each do |serie|
-        if photo.date_taken < (serie.max + inteval) and photo.date_taken > (serie.min - inteval)
-          serie.push  photo.date_taken
-          flag ||= true
-        end
-      end
-
-      albums.push [photo.date_taken] unless flag
-    end
-
-
-    albums.delete_if do |album|
-
-      if album.count < density
-        true
-      else
-        new_album = self.new
-        new_album.name = album.min.strftime("%b %Y %d").to_s
-        new_album.start_date = album.min
-        new_album.end_date = album.max
-        new_album.album_type = "event"
-        new_album.save
-        false
-      end
-    end
-
-    return albums
-  end
-
   private
+    def set_default_values
+      self.like ||= false
+      self.has_comment ||= false
+    end
+
+  # def self.generate_year_based_albums
+  #   distinct_years = Photo.pluck(:date_taken).map{|x| x.year}.uniq.each do |rec|
+  #     album = Album.new
+  #     album.name =  rec.to_s
+  #     album.start_date = Date.new(rec.to_i, 1, 1)
+  #     album.end_date = Date.new(rec.to_i, 12, 31)
+  #     album.album_type = "year"
+  #     album.save
+  #   end
+  # end
   #
-  # def get_predicate(col, value, predicate)
-  #   Squeel::Nodes::Predicate.new(Squeel::Nodes::Stub.new(col), predicate, value)
+  # def self.generate_month_based_albums
+  #   distinct_months = Photo.pluck(:date_taken).map{|x| Date.new(x.year, x.month, 1)}.uniq.each do |rec|
+  #     album = Album.new
+  #     album.name = rec.strftime("%b %Y").to_s
+  #     album.start_date = rec
+  #     album.end_date = (rec >> 1) -1
+  #     album.album_type = "month"
+  #     album.save
+  #   end
+  # end
+  #
+  # def self.generate_inteval_based_albums(inteval=10, density=10)
+  #   inteval = inteval*60
+  #   albums=[]
+  #
+  #   Photo.all.order(:date_taken).each do |photo|
+  #
+  #     flag ||= false
+  #     albums.each do |serie|
+  #       if photo.date_taken < (serie.max + inteval) and photo.date_taken > (serie.min - inteval)
+  #         serie.push  photo.date_taken
+  #         flag ||= true
+  #       end
+  #     end
+  #
+  #     albums.push [photo.date_taken] unless flag
+  #   end
+  #
+  #
+  #   albums.delete_if do |album|
+  #
+  #     if album.count < density
+  #       true
+  #     else
+  #       new_album = self.new
+  #       new_album.name = album.min.strftime("%b %Y %d").to_s
+  #       new_album.start_date = album.min
+  #       new_album.end_date = album.max
+  #       new_album.album_type = "event"
+  #       new_album.save
+  #       false
+  #     end
+  #   end
+  #
+  #   return albums
   # end
 end

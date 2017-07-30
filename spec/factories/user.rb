@@ -2,7 +2,7 @@
 
 FactoryGirl.define do
   factory :user do
-    sequence :id          { |n| n }
+    # sequence :id          { |n| n }
     name                  { Faker::Internet.user_name }
     provider              ""
     uid                   ""

@@ -34,9 +34,9 @@ gem 'phashion'
 gem "mini_magick"
 gem 'ruby-filemagic'
 
-gem 'acts_as_commentable'
-gem 'acts_as_votable', '~> 0.10.0'
-gem 'acts-as-taggable-on', '~> 5.0'
+# gem 'acts_as_commentable'
+# gem 'acts_as_votable', '~> 0.10.0'
+# gem 'acts-as-taggable-on', '~> 5.0'
 
 gem 'resque'
 gem 'resque-loner'
@@ -62,7 +62,7 @@ gem "active_model_serializers"
 group :test do
   gem 'shoulda-matchers', '~> 3.0', require: false
   gem 'database_cleaner', '~> 1.5'
-  gem 'faker', branch: 'master' , git: 'https://github.com/stympy/faker.git'
+  gem 'faker'
 end
 
 group :development, :test do
@@ -71,6 +71,8 @@ group :development, :test do
   gem 'rspec-rails', '~> 3.4'
   gem 'factory_girl_rails', '~> 4.5'
   gem 'rack-test', require: 'rack/test'
+
+  gem 'awesome_print'
 end
 
 group :development do

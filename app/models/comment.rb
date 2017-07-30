@@ -1,15 +1,14 @@
-class Comment < ActiveRecord::Base
-
-  include ActsAsCommentable::Comment
-
-  belongs_to :commentable, :polymorphic => true
-
-  default_scope -> { order('created_at ASC') }
-
-  # NOTE: install the acts_as_votable plugin if you
-  # want user to vote on the quality of comments.
-  #acts_as_voteable
-
-  # NOTE: Comments belong to a user
+class Comment < Facet
+  belongs_to :photo
   belongs_to :user
+  belongs_to :source_comment, default: -> {SourceComment.first}
+
+  delegate :name, :to => :source_comment
+  validates :user_id, uniqueness: { scope: [:photo, :source_comment_id],
+    message: "This comment exists already" }
+  include ActionView::Helpers::DateHelper
+
+  def created
+    time_ago_in_words(self.created_at)
+  end
 end

@@ -2,7 +2,7 @@
 
 FactoryGirl.define do
   factory :location do
-    sequence :id      { |n| n }
+    # sequence :id      { |n| n }
     status            { Faker::Number.number(1) }
     latitude          { Faker::Number.between(1, 180) }
     longitude         { Faker::Number.between(1, 180) }
@@ -22,14 +22,14 @@ end
 
 FactoryGirl.define do
   factory :country do
-    sequence :id      { |n| n }
+    # sequence :id      { |n| n }
     name              { Faker::Address.country }
   end
 end
 
 FactoryGirl.define do
   factory :city do
-    sequence :id      { |n| n }
+    # sequence :id      { |n| n }
     name              { Faker::Address.city }
   end
 end

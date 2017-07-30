@@ -1,0 +1,3 @@
+class FacetsController < ApplicationController
+  
+end

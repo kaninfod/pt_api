@@ -1,4 +1,4 @@
-class SimplePhotoSerializer < ActiveModel::Serializer
+class PhotoSimpleSerializer < ActiveModel::Serializer
   attributes :id, :date_taken_formatted, :url_tm, :url_md, :url_lg, :url_org
-  belongs_to :bucket
+  has_many :facets
 end

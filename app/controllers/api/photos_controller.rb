@@ -2,7 +2,16 @@ module Api
   class PhotosController < ApplicationController
     include BucketActions
     set_pagination_headers :photos, only: [:index]
-    before_action :set_photo, only: [:destroy, :rotate, :show, :add_to_album, :addtag, :removetag, :add_comment, :like]
+    before_action :set_photo, only: [
+      :destroy,
+      :rotate,
+      :show,
+      :add_to_album,
+      :comment, :uncomment,
+      :like, :unlike,
+      :bucket, :unbucket,
+      :tag, :untag
+   ]
 
 
     #GET /api/photos/
@@ -10,15 +19,16 @@ module Api
       # @searchparams = {}
       @album_hash = {}
       @order = "desc"
-      @album = Album.new(get_album_hash)
+      get_album_hash
+      @album = Album.new(@album_hash)
       #Get photos
-      @photos = @album.album_photos.where('photos.status != ? or photos.status is ?', 1, nil).includes(:bucket).order(date_taken: @order).paginate(:page => params[:page], :per_page=>60)
-      render json: @photos, each_serializer: SimplePhotoSerializer
+      @photos = @album.album_photos.where('photos.status != ? or photos.status is ?', 1, nil).order(date_taken: @order).paginate(:page => params[:page], :per_page=>60)
+      render json: @photos, each_serializer: PhotoSimpleSerializer
     end
 
     def show
       # @photo = Photo.find_by_id(params[:id]).includes(:tags)
-      render json: @photo, serializer: CompletePhotoSerializer
+      render json: @photo, serializer: PhotoCompleteSerializer
     end
 
     def destroy
@@ -33,59 +43,59 @@ module Api
       render :json => {:status => true}
     end
 
-    def add_comment
-      if params.has_key? "comment"
-        comment = add_comment_helper(@photo.id, params[:comment])
-        @comments = Photo.find(@photo.id).comments
-        render :partial => 'comments', locals: {comments: @comments}
-      end
+    # /api/photos/:id/comment/add
+    def comment
+      @photo.add_comment current_user, params[:comment]
+      render json: @photo, serializer: PhotoCompleteSerializer
     end
 
+    # /api/photos/:id/comment/delete
+    def uncomment
+      @photo.uncomment params[:comment_id]
+      render json: @photo, serializer: PhotoCompleteSerializer
+    end
+
+    # /api/photos/tags
+    def tags
+      tags = SourceTag.all
+      render json: tags
+    end
+
+    # /api/photos/:id/tag/add
+    def tag
+      @photo.add_tag current_user, params[:tag]
+      render json: @photo, serializer: PhotoCompleteSerializer
+    end
+
+    # /api/photos/:id/tag/delete
+    def untag
+      @photo.untag params[:tag_id]
+      render json: @photo, serializer: PhotoCompleteSerializer
+    end
+
+    # /api/photos/:id/like/add
     def like
-      if current_user.voted_for? @photo
-        @photo.unliked_by current_user
-      else
-        @photo.liked_by current_user
-      end
-      render :json => {:likes => @photo.votes_for.size, :liked_by_current_user => (current_user.voted_for? @photo)}
+      @photo.add_like current_user
+      render json: @photo, serializer: PhotoCompleteSerializer
     end
 
-    #GET /api/photos/taglist
-    def taglist
-      @taglist = ActsAsTaggableOn::Tag.all
-      render json: @taglist, each_serializer: TaglistSerializer
+    # /api/photos/:id/like/delete
+    def unlike
+      @photo.unlike current_user
+      render json: @photo, serializer: PhotoCompleteSerializer
     end
 
-    def addtag
-      if params[:name][0,1] == "@"
-        @photo.objective_list.add params[:name]
-      else
-        @photo.tag_list.add params[:name]
-      end
-
-      if @photo.save
-        render :json => {:tags => @photo.tags}
-      else
-        render :status => "500"
-      end
+    # /api/photos/:id/bucket/add
+    def bucket
+      @photo = @photo.add_bucket current_user
+      render json: @photo, serializer: PhotoCompleteSerializer
     end
 
-    def removetag
-      # photo = Photo.find params[:id]
-
-      if params[:name][0,1] == "@"
-        @photo.objective_list.remove params[:name]
-      else
-        @photo.tag_list.remove params[:name]
-      end
-
-      if @photo.save
-        render :json => {:tags => @photo.tags}
-      else
-        render :status => "500"
-      end
+    # /api/photos/:id/unbucket/delete
+    def unbucket
+      @photo.unbucket current_user
+      render json: @photo, serializer: PhotoCompleteSerializer
     end
-
 
     private
 
@@ -107,6 +117,7 @@ module Api
       end
 
       def set_sort_direction()
+
         if params.has_key? :direction
           case params[:direction]
             when "true"
@@ -148,3 +159,58 @@ module Api
 
   end
 end
+
+
+
+    # def add_comment
+    #   if params.has_key? "comment"
+    #     comment = add_comment_helper(@photo.id, params[:comment])
+    #     @comments = Photo.find(@photo.id).comments
+    #     render :partial => 'comments', locals: {comments: @comments}
+    #   end
+    # end
+    #
+    # def like
+    #   if current_user.voted_for? @photo
+    #     @photo.unliked_by current_user
+    #   else
+    #     @photo.liked_by current_user
+    #   end
+    #   render :json => {:likes => @photo.votes_for.size, :liked_by_current_user => (current_user.voted_for? @photo)}
+    # end
+
+    # #GET /api/photos/taglist
+    # def taglist
+    #   @taglist = ActsAsTaggableOn::Tag.all
+    #   render json: @taglist, each_serializer: TaglistSerializer
+    # end
+
+    # def addtag
+    #   if params[:name][0,1] == "@"
+    #     @photo.objective_list.add params[:name]
+    #   else
+    #     @photo.tag_list.add params[:name]
+    #   end
+    #
+    #   if @photo.save
+    #     render :json => {:tags => @photo.tags}
+    #   else
+    #     render :status => "500"
+    #   end
+    # end
+    #
+    # def removetag
+    #   # photo = Photo.find params[:id]
+    #
+    #   if params[:name][0,1] == "@"
+    #     @photo.objective_list.remove params[:name]
+    #   else
+    #     @photo.tag_list.remove params[:name]
+    #   end
+    #
+    #   if @photo.save
+    #     render :json => {:tags => @photo.tags}
+    #   else
+    #     render :status => "500"
+    #   end
+    # end

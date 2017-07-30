@@ -10,14 +10,6 @@ GIT
       rack-protection (= 2.0.0)
       tilt (~> 2.0)
 
-GIT
-  remote: https://github.com/stympy/faker.git
-  revision: 6148f01b4f2755358e4dd4928a438be9e55fb11b
-  branch: master
-  specs:
-    faker (1.8.4)
-      i18n (~> 0.5)
-
 GEM
   remote: https://rubygems.org/
   specs:
@@ -66,11 +58,8 @@ GEM
       i18n (~> 0.7)
       minitest (~> 5.1)
       tzinfo (~> 1.1)
-    acts-as-taggable-on (5.0.0)
-      activerecord (>= 4.2.8)
-    acts_as_commentable (4.0.2)
-    acts_as_votable (0.10.0)
     arel (8.0.0)
+    awesome_print (1.8.0)
     bcrypt (3.1.11)
     builder (3.2.3)
     byebug (9.0.6)
@@ -89,6 +78,8 @@ GEM
     factory_girl_rails (4.8.0)
       factory_girl (~> 4.8.0)
       railties (>= 3.0.0)
+    faker (1.8.4)
+      i18n (~> 0.5)
     ffi (1.9.18)
     flickraw (0.9.9)
     geocoder (1.4.4)
@@ -212,7 +203,7 @@ GEM
       sprockets (>= 3.0.0)
     thor (0.19.4)
     thread_safe (0.3.6)
-    tilt (2.0.7)
+    tilt (2.0.8)
     tzinfo (1.2.3)
       thread_safe (~> 0.1)
     vegas (0.1.11)
@@ -228,16 +219,14 @@ PLATFORMS
 DEPENDENCIES
   active_model_serializers
   active_scheduler
-  acts-as-taggable-on (~> 5.0)
-  acts_as_commentable
-  acts_as_votable (~> 0.10.0)
+  awesome_print
   bcrypt (~> 3.1.7)
   byebug
   concurrent-ruby
   database_cleaner (~> 1.5)
   dropbox-sdk
   factory_girl_rails (~> 4.5)
-  faker!
+  faker
   flickraw (~> 0.9.8)
   geocoder
   jbuilder (~> 2.5)

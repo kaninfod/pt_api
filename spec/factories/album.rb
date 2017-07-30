@@ -1,7 +1,7 @@
 
 FactoryGirl.define do
   factory :album do
-    sequence :id      { |n| n }
+    # sequence :id      { |n| n }
     sequence :name    { |n| "person_name_#{n}" }
     start_date        { Faker::Date.backward(14) }
     end_date          { Faker::Date.backward(14) }

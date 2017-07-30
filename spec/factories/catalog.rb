@@ -1,7 +1,7 @@
 
 FactoryGirl.define do
   factory :master_catalog do
-    sequence :id          { |n| n }
+    # sequence :id          { |n| n }
     sequence :name        { |n| "catalog_name_#{n}" }
     # name                  { Faker::Internet.user_name }
     created_at            { Faker::Date.backward(14) }
@@ -20,7 +20,7 @@ end
 
 FactoryGirl.define do
   factory :dropbox_catalog do
-    sequence :id          { |n| n }
+    # sequence :id          { |n| n }
     sequence :name        { |n| "catalog_name_#{n}" }
     # name                  { Faker::Internet.user_name }
     created_at            { Faker::Date.backward(14) }
@@ -39,7 +39,7 @@ end
 
 FactoryGirl.define do
   factory :flickr_catalog do
-    sequence :id          { |n| n }
+    # sequence :id          { |n| n }
     sequence :name        { |n| "catalog_name_#{n}" }
     # name                  { Faker::Internet.user_name }
     created_at            { Faker::Date.backward(14) }
