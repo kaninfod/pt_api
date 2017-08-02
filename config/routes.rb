@@ -1,6 +1,11 @@
 Rails.application.routes.draw do
   namespace :api do
 
+    post    '/users/login'                       => 'users#authenticate'
+    get     '/users/from_token'                  => 'users#validate_token'
+    # resources :users, controller: 'users', only: [:create, :edit, :update]
+
+
     post    'authenticate', to: 'authentication#authenticate'
     get     'authentication/validate', to: 'authentication#validate_token'
 
@@ -12,17 +17,19 @@ Rails.application.routes.draw do
 
     get     'pages' => 'pages#index'
 
+    get     '/photos/taglist'               => 'photos#taglist'
+    get     '/photos/bucket'               => 'photos#bucket'
     resources :photos
     get     '/photos/:id/rotate/(:degrees)' => 'photos#rotate'
-    post    '/photos/:id/comment/add' => 'photos#comment'
-    delete  '/photos/:id/comment/delete' => 'photos#uncomment'
-    get     '/photos/tags' => 'photos#tags'
-    post    '/photos/:id/tag/add' => 'photos#tag'
-    delete  '/photos/:id/tag/delete' => 'photos#untag'
-    post    '/photos/:id/like/add' => 'photos#like'
-    delete  '/photos/:id/like/delete' => 'photos#unlike'
-    post    '/photos/:id/bucket/add' => 'photos#bucket'
-    delete  '/photos/:id/bucket/delete' => 'photos#unbucket'
+    post    '/photos/:id/comment/add'       => 'photos#comment'
+    delete  '/photos/:id/comment/delete'    => 'photos#uncomment'
+    post    '/photos/:id/tag/add'           => 'photos#tag'
+    delete  '/photos/:id/tag/delete'        => 'photos#untag'
+    post    '/photos/:id/like/toggle'       => 'photos#like_toggle'
+    post    '/photos/:id/bucket/toggle'     => 'photos#bucket_toggle'
+    # delete  '/photos/:id/bucket/delete'     => 'photos#unbucket'
+
+    # delete  '/photos/:id/like/delete'     => 'photos#unlike'
 
 
 
@@ -64,9 +71,9 @@ Rails.application.routes.draw do
     resources :jobs
   end
 
-  Rails.application.routes.draw do
-    resources :users, controller: 'users', only: [:create, :edit, :update]
-  end
+  # Rails.application.routes.draw do
+  #   resources :users, controller: 'users', only: [:create, :edit, :update]
+  # end
 
   mount Resque::Server.new, at: "/resque"
   root to: 'photos#index'

@@ -1,38 +1,27 @@
-# class UsersController < Clearance::UsersController
-#
-#
-#
-#   def index
-#     @users = User.all
-#   end
-#
-#   def show
-#     @user = User.find(params[:id])
-#   end
-#
-#   def edit
-#     @user = current_user
-#   end
-#
-#   def update
-#     data = params.require(:user).permit(:name, :email, :avatar)
-#     if current_user.update(data)
-#       redirect_to "/photos"
-#     end
-#   end
-#
-#   private
-#
-#   def user_from_params
-#     email = user_params.delete(:email)
-#     password = user_params.delete(:password)
-#     name = user_params.delete(:name)
-#
-#     Clearance.configuration.user_model.new(user_params).tap do |user|
-#       user.email = email
-#       user.password = password
-#       user.name = name
-#     end
-#   end
-#
-# end
+module Api
+  class UsersController < ApplicationController
+    skip_before_action :authenticate_request, only: :authenticate
+
+    def authenticate
+      command = AuthenticateUser.call(params[:email], params[:password])
+
+      if command.success?
+        @user = User.find_by_email(params[:email])
+        @user.update(remember_token: command.result)
+        render json: @user
+        # render json: { status: 200, auth_token: command.result, user: user }
+      else
+        render json: { error: command.errors }, status: :unauthorized
+      end
+    end
+
+    def validate_token
+      @current_user = AuthorizeApiRequest.call(request.headers).result
+      if @current_user
+        render json: @current_user
+      else
+        render json: { error: 'Not Authorized' }, status: 401
+      end
+    end
+  end
+end

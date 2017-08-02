@@ -3,6 +3,8 @@ class Location < ActiveRecord::Base
   has_many :photos
   belongs_to :country
   belongs_to :city
+  delegate :name, :to => :country, :prefix => true
+  delegate :name, :to => :city, :prefix => true
   reverse_geocoded_by :latitude, :longitude
 
   def self.geolocate

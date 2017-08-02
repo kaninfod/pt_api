@@ -9,8 +9,8 @@ RSpec.describe Api::PhotosController, type: :controller do
     _photos = FactoryGirl.create_list(:photo, 3)
     @photo = _photos.first
     @photo_with_facets = _photos.last
-    @photo_with_facets.add_bucket User.last
-    @photo_with_facets.add_like User.last
+    @photo_with_facets.bucket_toggle User.last
+    @photo_with_facets.like_toggle User.last
     @photo_with_facets.add_tag User.last, "my_tag"
     @photo_with_facets.add_comment User.last, "a comment"
   end
@@ -43,7 +43,6 @@ RSpec.describe Api::PhotosController, type: :controller do
     #execute
     get :show, :format => :json, params: {:id => @photo_with_facets.id }
     json = JSON.parse(response.body)
-    p json
 
     # verify
     expect(response).to be_success
@@ -55,7 +54,7 @@ RSpec.describe Api::PhotosController, type: :controller do
     request.headers.merge! @header
 
     #execute
-    get :bucket, :format => :json, params: {:id => @photo.id}
+    post :bucket_toggle, :format => :json, params: {:id => @photo.id}
     json = JSON.parse(response.body)
 
     # verify
@@ -68,7 +67,7 @@ RSpec.describe Api::PhotosController, type: :controller do
     request.headers.merge! @header
 
     #execute
-    get :unbucket, :format => :json, params: {:id => @photo_with_facets.id}
+    post :bucket_toggle, :format => :json, params: {:id => @photo_with_facets.id}
     json = JSON.parse(response.body)
 
     # verify
@@ -76,12 +75,25 @@ RSpec.describe Api::PhotosController, type: :controller do
     expect(json["bucket"]).to be_nil
   end
 
+  it "get bucket" do
+    #setup
+    request.headers.merge! @header
+
+    #execute
+    post :bucket, :format => :json, params: {:id => @photo.id}
+    json = JSON.parse(response.body)
+
+    # verify
+    expect(response).to be_success
+    # expect(json["bucket"]["type"]).to eq("Bucket")
+  end
+
   it "Add like to photo" do
     #setup
     request.headers.merge! @header
 
     #execute
-    get :like, :format => :json, params: {:id => @photo.id}
+    post :like_toggle, :format => :json, params: {:id => @photo.id}
     json = JSON.parse(response.body)
 
     # verify
@@ -94,7 +106,7 @@ RSpec.describe Api::PhotosController, type: :controller do
     request.headers.merge! @header
 
     #execute
-    get :unlike, :format => :json, params: {:id => @photo_with_facets.id}
+    delete :like_toggle, :format => :json, params: {:id => @photo_with_facets.id}
     json = JSON.parse(response.body)
 
     # verify
@@ -107,7 +119,7 @@ RSpec.describe Api::PhotosController, type: :controller do
     request.headers.merge! @header
 
     #execute
-    get :comment, :format => :json, params: {:id => @photo.id, :comment => "this is it!"}
+    post :comment, :format => :json, params: {:id => @photo.id, :comment => "this is it!"}
     json = JSON.parse(response.body)
 
     # verify
@@ -120,7 +132,7 @@ RSpec.describe Api::PhotosController, type: :controller do
     request.headers.merge! @header
 
     #execute
-    get :uncomment, :format => :json, params: {
+    delete :uncomment, :format => :json, params: {
       :id => @photo_with_facets.id,
       :comment_id => @photo_with_facets.comments.first.id
      }
@@ -136,7 +148,7 @@ RSpec.describe Api::PhotosController, type: :controller do
     request.headers.merge! @header
 
     #execute
-    get :tag, :format => :json, params: {:id => @photo.id, :tag => "duddi"}
+    post :tag, :format => :json, params: {:id => @photo.id, :tag => "duddi"}
     json = JSON.parse(response.body)
 
     # verify
@@ -149,7 +161,7 @@ RSpec.describe Api::PhotosController, type: :controller do
     request.headers.merge! @header
 
     #execute
-    get :untag, :format => :json, params: {
+    delete :untag, :format => :json, params: {
       :id => @photo_with_facets.id,
       :tag_id => @photo_with_facets.tags.first.id
      }
@@ -165,7 +177,7 @@ RSpec.describe Api::PhotosController, type: :controller do
     request.headers.merge! @header
 
     #execute
-    get :tags, :format => :json, params: { }
+    get :taglist, :format => :json, params: { }
     json = JSON.parse(response.body)
 
     # verify

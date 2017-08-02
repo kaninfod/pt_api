@@ -5,4 +5,5 @@ class PhotoCompleteSerializer < ActiveModel::Serializer
   has_many :comments
   has_one :like
   has_one :bucket
+  belongs_to :location
 end

@@ -50,7 +50,7 @@ module Api
     private
 
       def album_params
-        params.require(:album).permit(:start, :end, :name, :make, :model, :country, :city, :photo_ids, :album_type, {:tags=>[123]})
+        params.require(:album).permit(:start_date, :end_date, :name, :make, :model, :like, :country, :city, :photo_ids, :album_type, {:tags=>[123]})
       end
 
       def set_album

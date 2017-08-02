@@ -11,7 +11,7 @@ class Album < ActiveRecord::Base
 
   def cover_url
     if self.album_photos.count > 0
-      self.album_photos.first.url('md')
+      self.album_photos.first.url_md
     else
       Photo.null_photo
     end

@@ -24,8 +24,10 @@ module Api
 
      private
      def authenticate_request
-       if params.has_key? :token
+       if params.has_key?(:token)
          request.headers["Authorization"] = params[:token]
+       elsif params.has_key?(:Authorization)
+         request.headers["Authorization"] = params[:Authorization]
        end
        @current_user = AuthorizeApiRequest.call(request.headers).result
        render json: { error: 'Not Authorized' }, status: 401 unless @current_user

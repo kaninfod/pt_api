@@ -2,6 +2,7 @@ module Api
   class BucketController < ApplicationController
     include BucketActions
 
+
     def add
       if Photo.where(id: params[:id]).present?
         Bucket.create(user: @current_user.id, photo_id: params[:id])
@@ -60,11 +61,6 @@ module Api
         }
       }
     end
-
-    # def clear
-    #   session[:bucket] = []
-    #   redirect_to bucket_path
-    # end
 
     def count
       render :json => {'count' => session[:bucket].count}

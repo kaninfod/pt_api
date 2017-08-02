@@ -43,26 +43,31 @@ class Photo < ActiveRecord::Base
     find_by_sql(sql)
   }
 
-  def add_bucket(user)
-    Bucket.create(photo: self, user: user)
-    self
-  end
-
-  def unbucket(user)
-    if Bucket.where(photo: self, user: user).present?
-      Bucket.where(photo: self, user: user).first.destroy
+  def bucket_toggle(user)
+    _bucket = Bucket.where(photo: self, user: user)
+    if _bucket.present?
+      _bucket.first.destroy
+    else
+      Bucket.create(photo: self, user: user)
     end
     self
   end
 
-  def add_like(user)
-    Like.create(photo: self, user: user)
-  end
+  # def unbucket(user)
+  #   if Bucket.where(photo: self, user: user).present?
+  #     Bucket.where(photo: self, user: user).first.destroy
+  #   end
+  #   self
+  # end
 
-  def unlike(user)
-    if Like.where(photo: self, user: user).present?
-      Like.where(photo: self, user: user).first.destroy
+  def like_toggle(user)
+    _like = Like.where(photo: self, user: user)
+    if _like.present?
+      _like.first.destroy
+    else
+      Like.create(photo: self, user: user)
     end
+    self
   end
 
   def add_comment(user, comment)

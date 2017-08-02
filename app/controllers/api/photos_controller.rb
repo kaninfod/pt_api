@@ -8,11 +8,10 @@ module Api
       :show,
       :add_to_album,
       :comment, :uncomment,
-      :like, :unlike,
-      :bucket, :unbucket,
+      :like_toggle,
+      :bucket_toggle,
       :tag, :untag
    ]
-
 
     #GET /api/photos/
     def index
@@ -27,7 +26,6 @@ module Api
     end
 
     def show
-      # @photo = Photo.find_by_id(params[:id]).includes(:tags)
       render json: @photo, serializer: PhotoCompleteSerializer
     end
 
@@ -38,7 +36,6 @@ module Api
     end
 
     def rotate
-      # @photo = Photo.find(params[:id])
       rotate_helper([@photo.id], params[:degrees])
       render :json => {:status => true}
     end
@@ -55,8 +52,8 @@ module Api
       render json: @photo, serializer: PhotoCompleteSerializer
     end
 
-    # /api/photos/tags
-    def tags
+    # /api/photos/taglist
+    def taglist
       tags = SourceTag.all
       render json: tags
     end
@@ -73,32 +70,25 @@ module Api
       render json: @photo, serializer: PhotoCompleteSerializer
     end
 
-    # /api/photos/:id/like/add
-    def like
-      @photo.add_like current_user
+    # /api/photos/:id/like/toggle
+    def like_toggle
+      @photo.like_toggle current_user
       render json: @photo, serializer: PhotoCompleteSerializer
     end
 
-    # /api/photos/:id/like/delete
-    def unlike
-      @photo.unlike current_user
+    # /api/photos/:id/bucket/toggle
+    def bucket_toggle
+      @photo.bucket_toggle current_user
       render json: @photo, serializer: PhotoCompleteSerializer
     end
 
-    # /api/photos/:id/bucket/add
+    # /api/photos/bucket
     def bucket
-      @photo = @photo.add_bucket current_user
-      render json: @photo, serializer: PhotoCompleteSerializer
-    end
-
-    # /api/photos/:id/unbucket/delete
-    def unbucket
-      @photo.unbucket current_user
-      render json: @photo, serializer: PhotoCompleteSerializer
+      @bucket = Photo.joins(:bucket).where('facets.user_id = ?', current_user)
+      render json: @bucket, each_serializer: PhotoSimpleSerializer
     end
 
     private
-
       # Use callbacks to share common setup or constraints between actions.
       def set_photo
         @photo = Photo.find(params[:id])
@@ -106,7 +96,7 @@ module Api
 
       # Never trust parameters from the scary internet, only allow the white list through.
       def photo_params
-        params.require(:photo).permit(:filename, :date_taken, :path, :file_thumb_path, :file_extension, :file_size, :location_id, :make, :model, :original_height, :original_width, :longitude, :latitude)
+        params.require(:photo).permit(:filename, :date_taken, :path, :file_thumb_path, :file_extension, :file_size, :location_id, :make, :model, :original_height, :original_width, :longitude, :latitude, :tag_id)
       end
 
       def get_album_hash
