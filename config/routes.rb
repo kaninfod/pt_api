@@ -6,8 +6,8 @@ Rails.application.routes.draw do
     # resources :users, controller: 'users', only: [:create, :edit, :update]
 
 
-    post    'authenticate', to: 'authentication#authenticate'
-    get     'authentication/validate', to: 'authentication#validate_token'
+    # post    'authenticate', to: 'authentication#authenticate'
+    # get     'authentication/validate', to: 'authentication#validate_token'
 
     put     '/albums/:id/photo/:photo' => "albums#add_photo"
     get     '/albums/:id/photos' => 'albums#photos'
