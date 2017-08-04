@@ -1,7 +1,7 @@
-module Api
-  class AlbumsController < ApplicationController
+
+  class API::AlbumsController < ApplicationController
     set_pagination_headers :photos, only: [:photos]
-    before_action :set_album, only: [:show, :update, :destroy, :photos, :add_photo]
+    before_action :set_album, only: [:show, :update, :destroy, :photos, :add_photo, :add_bucket]
     include Response
     include ExceptionHandler
 
@@ -21,7 +21,14 @@ module Api
     # GET /albums/:id/photos
     def photos
       @photos = @album.album_photos.paginate(:page => params[:page], :per_page=>60)
-      render 'api/photos/index'
+      render json: @photos, each_serializer: PhotoSimpleSerializer
+    end
+
+    # PUT /albums/:id/bucket
+    def add_bucket
+      @bucket = Photo.joins(:bucket).where('facets.user_id = ?', current_user)
+      @album.add_photos(@bucket.pluck(:photo_id))
+      render json: @bucket, each_serializer: PhotoSimpleSerializer
     end
 
     # GET /albums/:id
@@ -58,4 +65,3 @@ module Api
       end
 
   end
-end

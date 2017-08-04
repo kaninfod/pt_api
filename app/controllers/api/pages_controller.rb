@@ -1,8 +1,7 @@
-module Api
-  class PagesController < ApplicationController
+
+  class API::PagesController < ApplicationController
 
     def index
       render layout: 'basic'
     end
   end
-end

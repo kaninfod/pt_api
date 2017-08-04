@@ -1,10 +1,11 @@
-module Api
+
   class ApplicationController < ActionController::API
     before_action :authenticate_request
     attr_reader :current_user
 
 
      protected
+
      def self.set_pagination_headers(name, options = {})
        after_action(options) do |controller|
          results = instance_variable_get("@#{name}")
@@ -22,19 +23,14 @@ module Api
    end
 
 
-     private
-     def authenticate_request
-       if params.has_key?(:token)
-         request.headers["Authorization"] = params[:token]
-       elsif params.has_key?(:Authorization)
-         request.headers["Authorization"] = params[:Authorization]
-       end
-       @current_user = AuthorizeApiRequest.call(request.headers).result
-       render json: { error: 'Not Authorized' }, status: 401 unless @current_user
+
+   def authenticate_request
+     if params.has_key?(:token)
+       request.headers["Authorization"] = params[:token]
+     elsif params.has_key?(:Authorization)
+       request.headers["Authorization"] = params[:Authorization]
      end
-
-
-
-
+     @current_user = AuthorizeApiRequest.call(request.headers).result
+     render json: { error: 'Not Authorized' }, status: 401 unless @current_user
+   end
   end
-end

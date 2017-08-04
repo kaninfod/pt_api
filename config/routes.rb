@@ -1,37 +1,26 @@
 Rails.application.routes.draw do
-  namespace :api do
+  namespace :api, constraints: {format: :json} do
 
     post    '/users/login'                       => 'users#authenticate'
     get     '/users/from_token'                  => 'users#validate_token'
-    # resources :users, controller: 'users', only: [:create, :edit, :update]
 
-
-    # post    'authenticate', to: 'authentication#authenticate'
-    # get     'authentication/validate', to: 'authentication#validate_token'
-
-    put     '/albums/:id/photo/:photo' => "albums#add_photo"
-    get     '/albums/:id/photos' => 'albums#photos'
     resources :albums
-    match   'albums/select' => 'albums/select', via: [:get, :post]
-    get     '/albums/get_tag_list' => "albums#get_tag_list"
+    put     '/albums/:id/photo/:photo'  => "albums#add_photo"
+    put     '/albums/:id/bucket'        => "albums#add_bucket"
+    get     '/albums/:id/photos'        => 'albums#photos'
 
     get     'pages' => 'pages#index'
-
-    get     '/photos/taglist'               => 'photos#taglist'
-    get     '/photos/bucket'               => 'photos#bucket'
+    get     '/photos/taglist'                   => 'photos#taglist'
+    get     '/photos/bucket'                    => 'photos#bucket'
+    post    '/photos/bucket/rotate/:degrees'    => 'photos#rotate_bucket'
     resources :photos
-    get     '/photos/:id/rotate/(:degrees)' => 'photos#rotate'
-    post    '/photos/:id/comment/add'       => 'photos#comment'
-    delete  '/photos/:id/comment/delete'    => 'photos#uncomment'
-    post    '/photos/:id/tag/add'           => 'photos#tag'
-    delete  '/photos/:id/tag/delete'        => 'photos#untag'
-    post    '/photos/:id/like/toggle'       => 'photos#like_toggle'
-    post    '/photos/:id/bucket/toggle'     => 'photos#bucket_toggle'
-    # delete  '/photos/:id/bucket/delete'     => 'photos#unbucket'
-
-    # delete  '/photos/:id/like/delete'     => 'photos#unlike'
-
-
+    get     '/photos/:id/rotate/(:degrees)'     => 'photos#rotate'
+    post    '/photos/:id/comment/add'           => 'photos#comment'
+    delete  '/photos/:id/comment/delete'        => 'photos#uncomment'
+    post    '/photos/:id/tag/add'               => 'photos#tag'
+    delete  '/photos/:id/tag/delete'            => 'photos#untag'
+    post    '/photos/:id/like/toggle'           => 'photos#like_toggle'
+    post    '/photos/:id/bucket/toggle'         => 'photos#bucket_toggle'
 
     get     '/catalogs/oauth_callback'
     get     '/catalogs/:id/import' => 'catalogs#import'

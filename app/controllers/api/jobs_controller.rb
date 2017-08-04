@@ -1,5 +1,5 @@
-module Api
-  class JobsController < ApplicationController
+
+  class API::JobsController < ApplicationController
 
     def list
       if params.has_key?("query")
@@ -18,4 +18,3 @@ module Api
     end
 
   end
-end

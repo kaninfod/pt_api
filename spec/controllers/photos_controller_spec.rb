@@ -2,7 +2,7 @@ require 'rails_helper'
 require "rack/test"
 include Rack::Test::Methods
 
-RSpec.describe Api::PhotosController, type: :controller do
+RSpec.describe API::PhotosController, type: :controller do
 
   before(:context) do
     @header = authenticated_header()
@@ -12,7 +12,7 @@ RSpec.describe Api::PhotosController, type: :controller do
     @photo_with_facets.bucket_toggle User.last
     @photo_with_facets.like_toggle User.last
     @photo_with_facets.add_tag User.last, "my_tag"
-    @photo_with_facets.add_comment User.last, "a comment"
+    @photo_with_facets.add_comment User.last, "a comment which is rather long"
   end
 
   it "returns 401 - not auth" do

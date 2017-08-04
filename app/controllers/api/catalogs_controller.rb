@@ -1,5 +1,5 @@
-module Api
-  class CatalogsController < ApplicationController
+
+  class API::CatalogsController < ApplicationController
     skip_before_action :authenticate_request, :only => [:oauth_callback]
     set_pagination_headers :photos, only: [:photos]
     before_action :set_catalog, only: [:show, :update, :destroy, :photos, :oauth_verify, :import]
@@ -46,7 +46,7 @@ module Api
 
     def photos
       @photos = @catalog.photos.paginate(:page => params[:page], :per_page=>60)
-      render 'api/photos/index'
+      render json: @photos, each_serializer: PhotoSimpleSerializer
     end
 
     def import
@@ -86,7 +86,7 @@ module Api
         )
       end
   end
-end
+
 
 # def oauth_verify
 #   verifier = params[:oauth_verifier]

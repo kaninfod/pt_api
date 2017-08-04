@@ -1,5 +1,5 @@
-module Api
-  class PhotosController < ApplicationController
+
+  class API::PhotosController < ApplicationController
     include BucketActions
     set_pagination_headers :photos, only: [:index]
     before_action :set_photo, only: [
@@ -35,30 +35,40 @@ module Api
       end
     end
 
+    # /photos/rotate
     def rotate
       rotate_helper([@photo.id], params[:degrees])
       render :json => {:status => true}
     end
 
-    # /api/photos/:id/comment/add
+    # POST /photos/bucket/rotate/
+    def rotate_bucket
+      @bucket = Photo.joins(:bucket).where('facets.user_id = ?', current_user)
+      @bucket.each do |photo|
+        photo.rotate(params[:degrees])
+      end
+      render json: @bucket, each_serializer: PhotoSimpleSerializer
+    end
+
+    # POST /api/photos/:id/comment/add
     def comment
       @photo.add_comment current_user, params[:comment]
       render json: @photo, serializer: PhotoCompleteSerializer
     end
 
-    # /api/photos/:id/comment/delete
+    # DELETE /api/photos/:id/comment/delete
     def uncomment
       @photo.uncomment params[:comment_id]
       render json: @photo, serializer: PhotoCompleteSerializer
     end
 
-    # /api/photos/taglist
+    # GET /api/photos/taglist
     def taglist
       tags = SourceTag.all
       render json: tags
     end
 
-    # /api/photos/:id/tag/add
+    # POST /api/photos/:id/tag/add
     def tag
       @photo.add_tag current_user, params[:tag]
       render json: @photo, serializer: PhotoCompleteSerializer
@@ -148,7 +158,7 @@ module Api
       end
 
   end
-end
+
 
 
 

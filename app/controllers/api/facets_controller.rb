@@ -1,3 +1,3 @@
-class FacetsController < ApplicationController
-  
+class API::FacetsController < ApplicationController
+
 end
