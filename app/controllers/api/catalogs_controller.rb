@@ -56,9 +56,11 @@
 
     def oauth_callback
       @catalog = Catalog.find get_catalog_id
-      @catalog.oauth_callback(params[:code])
+      code = params[:oauth_verifier] || params[:code]
+      @catalog.oauth_callback(code)
       render json: @catalog, status: 200
     end
+
 
     private
       def get_catalog_id

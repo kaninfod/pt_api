@@ -121,7 +121,7 @@ RSpec.describe API::PhotosController, type: :controller do
     #execute
     post :comment, :format => :json, params: {:id => @photo.id, :comment => "this is it!"}
     json = JSON.parse(response.body)
-
+    p json
     # verify
     expect(response).to be_success
     expect(json["comments"].first["type"]).to eq("Comment")

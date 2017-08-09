@@ -8,7 +8,7 @@ class DropboxCatalog < Catalog
     self.appkey = Rails.configuration.dropbox["appkey"]
     self.appsecret = Rails.configuration.dropbox["appsecret"]
 
-    redirect_base_url = self.redirect_uri
+    redirect_base_url = Rails.configuration.phototank["api_base_url"] #self.redirect_uri
     redirect_url_ext = "/api/catalogs/oauth_callback"
 
     authorize_url = "https://www.dropbox.com/oauth2/authorize"

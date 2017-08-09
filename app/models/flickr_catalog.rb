@@ -24,13 +24,15 @@ class FlickrCatalog < Catalog
     return self
   end
 
+
   def oauth_callback(code)
     begin
+      byebug
       flickr = FlickRaw::Flickr.new
 
       request_token = self.request_token
       access_token = request_token[:oauth_token]
-      oauth_verifier = self.verifier
+      oauth_verifier = code #self.verifier
 
       raw_token = flickr.get_access_token(request_token['oauth_token'], request_token['oauth_token_secret'], oauth_verifier)
       # raw_token is a hash like this {"user_nsid"=>"92023420%40N00", "oauth_token_secret"=>"XXXXXX", "username"=>"boncey", "fullname"=>"Darren%20Greaves", "oauth_token"=>"XXXXXX"}
