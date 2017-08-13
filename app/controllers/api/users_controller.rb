@@ -7,7 +7,7 @@ class API::UsersController < ApplicationController
 
     if command.success?
       @user = User.find_by_email(params[:email])
-      @user.update(remember_token: command.result)
+      @user.update(token: command.result)
       render json: @user
       # render json: { status: 200, auth_token: command.result, user: user }
     else

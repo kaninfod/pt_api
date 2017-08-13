@@ -22,7 +22,7 @@
       @album = Album.new(@album_hash)
       #Get photos
       @photos = @album.album_photos.where('photos.status != ? or photos.status is ?', 1, nil).order(date_taken: @order).paginate(:page => params[:page], :per_page=>params[:photosPerPage])
-      render json: @photos, include: ['comments', 'tags', 'like', 'bucket', 'location'] #, each_serializer: PhotoSimpleSerializer
+      render json: @photos #, include: ['comments', 'tags', 'like', 'bucket', 'location'] #, each_serializer: PhotoSimpleSerializer
     end
 
     def show
@@ -31,7 +31,7 @@
 
     def destroy
       if @photo.delete
-        render json: {:status=> 200, photo_id: photo.id}
+        render json: @photo
       end
     end
 
