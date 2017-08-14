@@ -9,7 +9,7 @@ class FlickrCatalog < Catalog
 
     base_url = Rails.configuration.phototank["api_base_url"]
     url_ext = "/api/catalogs/oauth_callback"
-    params = "?catalog_id=#{self.id}&token=#{self.user.remember_token}"
+    params = "?catalog_id=#{self.id}&token=#{self.user.token}"
     self.redirect_uri = "#{base_url}#{url_ext}#{params}"
 
     FlickRaw.api_key=self.appkey
