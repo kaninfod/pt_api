@@ -209,6 +209,7 @@ mount on clients:
 
 
 # Setup Redis server
+http://mjavery.blogspot.dk/2016/05/setting-up-redis-on-raspberry-pi.html
 
 Install
     wget http://download.redis.io/redis-stable.tar.gz
@@ -236,6 +237,7 @@ Edit configfile:
     pidfile to /var/run/redis_6379.pid
     loglevel to notice
     dir to /var/redis/6379
+    set bind 0.0.0.0
 
 
 run on startup:
@@ -257,3 +259,11 @@ Save an entry into the database:
 
 To see all the keys created in the redis db:
     redis-cli --scan
+
+# Setup nginx server
+
+    sudo apt-get install nginx
+
+    sudo /etc/init.d/nginx start
+
+    

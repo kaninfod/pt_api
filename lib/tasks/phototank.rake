@@ -39,4 +39,21 @@ namespace :phototank do
   task master_not_updating: :environment do
     Catalog.master.settings.updating = false
   end
+
+  desc 'Stop rails server'
+  task :stop do
+    File.new("tmp/pids/server.pid").tap { |f| Process.kill 9, f.read.to_i }.delete
+  end
+
+  desc 'Starts rails server'
+  task :start do
+    Process.exec("rails s puma -d")
+  end
+
+  desc "Restarts rails server"
+  task :restart do
+    Rake::Task[:stop].invoke
+    Rake::Task[:start].invoke
+  end
+
 end
