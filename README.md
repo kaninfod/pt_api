@@ -266,4 +266,33 @@ To see all the keys created in the redis db:
 
     sudo /etc/init.d/nginx start
 
-    
+Configuration file:
+
+    # Default server configuration
+    #
+    server {
+    	listen 80 default_server;
+    	listen [::]:80 default_server;
+
+    	#root /home/pi/pt_frontend;
+              location / {
+                root /home/pi/pt_frontend;
+                try_files $uri /index.html;
+              }
+
+              location /api/ {
+                proxy_redirect off;
+                proxy_set_header X-Real-IP  $remote_addr;
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                proxy_set_header Host $http_host;
+                # proxy_set_header X-Real-Port $server_port;
+                # proxy_set_header X-Real-Scheme $scheme;
+                proxy_set_header X-NginX-Proxy true;
+                proxy_pass http://127.0.0.1:3000;
+              }
+
+    	# Add index.php to the list if you are using PHP
+    	#index index.html index.htm index.nginx-debian.html;
+
+    	#server_name _;
+    }
