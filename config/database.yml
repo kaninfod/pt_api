@@ -19,7 +19,7 @@ test:
 
 production:
   <<: *default
-  username: root
+  username: pi
   password: bart
   host: 192.168.2.202
   database:  pt_prod

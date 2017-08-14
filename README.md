@@ -126,9 +126,27 @@ test:
 
     rbenv rehash
 
+## Setup Application
+
+### Get app from git repo:
+
+    git clone https://github.com/kaninfod/pt_api.git
+    cd pt_api
+    bundle install
+
+
 # Setup Mysql servers
 
     sudo apt-get install mysql-server && sudo apt-get install mysql-client
+
+Change Bind address to allow remote connections:
+    sudo nano /etc/mysql/my.cnf
+
+Change the bind address from 127.0.0.1 to 0.0.0.0
+
+Restart mysql:
+
+    sudo systemctl restart mysql.service
 
 
 # Setup NFS servers
