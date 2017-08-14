@@ -1,25 +1,25 @@
 
 # Setup 3 raspberry pi's each to host:
 
-*Application servers
-  *Node / Frontend with nginx
-  *Rails API
-  *Fileserver (NFS)
+* Application servers
+  * Node / Frontend with nginx
+  * Rails API
+  * Fileserver (NFS)
 
-*Backend
-  *Resque worker
-  *Redis
+* Backend
+  * Resque worker
+  * Redis
 
-*DB server
-  *Mysql server
+* DB server
+  * Mysql server
 
 # Generic setup for all servers
 
 ## setup raspbian:
-*Download and flash to sd cards
-*create file called ssh in sd card root folder
-  *ssh-copy-id pi@192.168.2.X
-*Update packages:
+* Download and flash to sd cards
+* create file called ssh in sd card root folder
+  * ssh-copy-id pi@192.168.2.X
+* Update packages:
 
     sudo apt-get update
     sudo apt-get upgrade
@@ -153,7 +153,7 @@ edit:
     sudo nano /etc/exports
 
 add:
-    /mnt  *(ro,sync,no_root_squash)
+    /mnt  * (ro,sync,no_root_squash)
 
 fix in case of following error:
 run on nfs server:
@@ -161,5 +161,9 @@ run on nfs server:
 error:
     rpcinfo: can't contact portmapper: RPC: Remote system error - No such file or directory
 run on nfs server:
-    sudo update-rc.d rpcbind enable && sudo update-rc.d nfs-common enable
-    sudo service rpcbind restart
+
+Make sure the NFS server is running:
+    sudo service nfs-kernel-server status
+    sudo service nfs-kernel-server stop
+    sudo service nfs-kernel-server start
+    sudo service nfs-kernel-server status

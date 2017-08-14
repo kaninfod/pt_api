@@ -16,6 +16,14 @@ test:
   <<: *default
   database:  <%= ENV["MYSQL_DATABASE_TEST"] %>
 
+
+production:
+  <<: *default
+  username: root
+  password: bart
+  host: 192.168.2.202
+  database:  pt_prod
+
 #
 # test:
 #   <<: *default
