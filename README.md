@@ -201,3 +201,6 @@ Make sure the NFS server is running:
     sudo service nfs-kernel-server stop
     sudo service nfs-kernel-server start
     sudo service nfs-kernel-server status
+
+mount on clients:
+    192.168.2.202:/mnt /mnt nfs rsize=8192,wsize=8192,timeo=14,intr
