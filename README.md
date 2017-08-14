@@ -134,6 +134,16 @@ test:
     cd pt_api
     bundle install
 
+### setup database
+Create database:
+    RAILS_ENV=production rake db:create
+
+Setup database
+    RAILS_ENV=production rake db:setup
+
+Init application:
+    RAILS_ENV=production rake phototank:Initialize
+
 
 # Setup Mysql servers
 
@@ -147,6 +157,12 @@ Change the bind address from 127.0.0.1 to 0.0.0.0
 Restart mysql:
 
     sudo systemctl restart mysql.service
+
+setup new user on mysql:
+
+    CREATE USER 'pi'@'%' IDENTIFIED BY 'bart';
+    GRANT ALL PRIVILEGES ON *.* TO 'pi'@'%' WITH GRANT OPTION;
+    FLUSH PRIVILEGES;
 
 
 # Setup NFS servers
