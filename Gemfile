@@ -59,6 +59,8 @@ gem 'concurrent-ruby'
 
 gem "active_model_serializers"
 
+gem 'dotenv-rails', :groups => [:development, :test, :production]
+
 group :test do
   gem 'shoulda-matchers', '~> 3.0', require: false
   gem 'database_cleaner', '~> 1.5'

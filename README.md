@@ -144,6 +144,8 @@ Setup database
 Init application:
     RAILS_ENV=production rake phototank:Initialize
 
+Create admin user:
+    RAILS_ENV=production rake phototank:create_admin
 
 # Setup Mysql servers
 
@@ -204,3 +206,54 @@ Make sure the NFS server is running:
 
 mount on clients:
     192.168.2.202:/mnt /mnt nfs rsize=8192,wsize=8192,timeo=14,intr
+
+
+# Setup Redis server
+
+Install
+    wget http://download.redis.io/redis-stable.tar.gz
+    tar xvzf redis-stable.tar.gz
+    cd redis-stable
+    make
+    cd src
+    sudo cp redis-server /usr/local/bin
+    sudo cp redis-cli /usr/local/bin
+    cd ..
+    cd ..
+    rm redis-stable.tar.gz
+
+Configuration
+    cd redis-stable
+    sudo mkdir /etc/redis
+    sudo mkdir /var/redis
+    sudo cp utils/redis_init_script /etc/init.d/redis_6379
+    sudo cp redis.conf /etc/redis/6379.conf
+    sudo mkdir /var/redis/6379
+    sudo nano /etc/redis/6379.conf
+
+Edit configfile:
+    daemonize to yes
+    pidfile to /var/run/redis_6379.pid
+    loglevel to notice
+    dir to /var/redis/6379
+
+
+run on startup:
+    sudo update-rc.d redis_6379 defaults
+
+
+I had problems getting the run levels working.  Had to set them manually
+    sudo update-rc.d redis_6379 start 20 2 3 4 5 . stop 80 0 1 6 .
+
+To manually start and stop
+    sudo redis-server /etc/redis/6379.conf
+    redis-cli -p 6379 shutdown
+
+To check that the redis server is running:
+    redis-cli ping
+
+Save an entry into the database:
+    redis-cli set someKey someValue
+
+To see all the keys created in the redis db:
+    redis-cli --scan
