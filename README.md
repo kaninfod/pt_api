@@ -245,13 +245,16 @@ run on startup:
 
 
 I had problems getting the run levels working.  Had to set them manually
+
     sudo update-rc.d redis_6379 start 20 2 3 4 5 . stop 80 0 1 6 .
 
 To manually start and stop
+
     sudo redis-server /etc/redis/6379.conf
     redis-cli -p 6379 shutdown
 
 To check that the redis server is running:
+
     redis-cli ping
 
 Save an entry into the database:

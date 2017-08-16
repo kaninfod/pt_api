@@ -70,6 +70,11 @@ class Photo < ActiveRecord::Base
     self
   end
 
+  def like(user)
+    Like.create(photo: self, user: user)
+    self
+  end
+
   def add_comment(user, comment)
     Comment.create(
       photo: self,

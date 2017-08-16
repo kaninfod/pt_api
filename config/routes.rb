@@ -12,7 +12,9 @@ Rails.application.routes.draw do
     get     'pages' => 'pages#index'
     get     '/photos/taglist'                   => 'photos#taglist'
     get     '/photos/bucket'                    => 'photos#bucket'
-    post    '/photos/bucket/rotate/:degrees'    => 'photos#rotate_bucket'
+    post    '/photos/bucket/like'               => 'photos#bucket_like'
+    post    '/photos/bucket/rotate/'            => 'photos#bucket_rotate'
+
     resources :photos
     get     '/photos/:id/rotate/(:degrees)'     => 'photos#rotate'
     post    '/photos/:id/comment/add'           => 'photos#comment'
@@ -21,6 +23,7 @@ Rails.application.routes.draw do
     delete  '/photos/:id/tag/delete'            => 'photos#untag'
     post    '/photos/:id/like/toggle'           => 'photos#like_toggle'
     post    '/photos/:id/bucket/toggle'         => 'photos#bucket_toggle'
+
 
     get     '/catalogs/oauth_callback'
     get     '/catalogs/:id/import' => 'catalogs#import'

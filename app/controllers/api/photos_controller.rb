@@ -1,6 +1,8 @@
 
   class API::PhotosController < ApplicationController
-    include BucketActions
+    # include BucketActions
+    include Response
+    include ExceptionHandler
     set_pagination_headers :photos, only: [:index]
     before_action :set_photo, only: [
       :destroy,
@@ -22,44 +24,40 @@
       @album = Album.new(@album_hash)
       #Get photos
       @photos = @album.album_photos.where('photos.status != ? or photos.status is ?', 1, nil).order(date_taken: @order).paginate(:page => params[:page], :per_page=>params[:photosPerPage])
-      render json: @photos #, include: ['comments', 'tags', 'like', 'bucket', 'location'] #, each_serializer: PhotoSimpleSerializer
+      render json: @photos
     end
 
+# Single photo actions
+
+    #GET /api/photos/:id
     def show
-      render json: @photo #, serializer: PhotoCompleteSerializer
+      render json: @photo
     end
 
+    #DELETE /api/photos/:id
     def destroy
       if @photo.delete
         render json: @photo
       end
     end
 
+    #TODO add id to url
     # /photos/rotate
     def rotate
       rotate_helper([@photo.id], params[:degrees])
       render :json => {:status => true}
     end
 
-    # POST /photos/bucket/rotate/
-    def rotate_bucket
-      @bucket = Photo.joins(:bucket).where('facets.user_id = ?', current_user)
-      @bucket.each do |photo|
-        photo.rotate(params[:degrees])
-      end
-      render json: @bucket #, each_serializer: PhotoSimpleSerializer
-    end
-
     # POST /api/photos/:id/comment/add
     def comment
       @photo.add_comment current_user, params[:comment]
-      render json: @photo #, serializer: PhotoCompleteSerializer
+      render json: @photo
     end
 
     # DELETE /api/photos/:id/comment/delete
     def uncomment
       @photo.uncomment params[:comment_id]
-      render json: @photo #, serializer: PhotoCompleteSerializer
+      render json: @photo
     end
 
     # GET /api/photos/taglist
@@ -71,32 +69,53 @@
     # POST /api/photos/:id/tag/add
     def tag
       @photo.add_tag current_user, params[:tag]
-      render json: @photo #, serializer: PhotoCompleteSerializer
+      render json: @photo
     end
 
     # /api/photos/:id/tag/delete
     def untag
       @photo.untag params[:tag_id]
-      render json: @photo #, serializer: PhotoCompleteSerializer
+      render json: @photo
     end
 
     # /api/photos/:id/like/toggle
     def like_toggle
       @photo.like_toggle current_user
-      render json: @photo #, serializer: PhotoCompleteSerializer
+      render json: @photo
+    end
+
+  #Bucket actions
+
+  # /api/photos/bucket
+    def bucket
+      @bucket = Photo.joins(:bucket).where('facets.user_id = ?', current_user)
+      render json: @bucket
     end
 
     # /api/photos/:id/bucket/toggle
     def bucket_toggle
       @photo.bucket_toggle current_user
-      render json: @photo #, serializer: PhotoCompleteSerializer
+      render json: @photo
     end
 
-    # /api/photos/bucket
-    def bucket
-      @bucket = Photo.joins(:bucket).where('facets.user_id = ?', current_user)
-      render json: @bucket #, each_serializer: PhotoSimpleSerializer
+    # /api/photos/bucket/like
+    def bucket_like
+      photo_ids = params.require(:photoIds)
+      @photos = Photo.find(photo_ids).map { |p| p.like current_user }
+      json_response(@photos)
     end
+
+    # POST /photos/bucket/rotate/
+    def bucket_rotate
+      degrees = params.require(:degrees)
+      degrees = JSON.parse(degrees)
+      @bucket = Photo.joins(:bucket).where('facets.user_id = ?', current_user)
+      @bucket.each do |photo|
+        photo.rotate(degrees)
+      end
+      render json: @bucket
+    end
+
 
     private
       # Use callbacks to share common setup or constraints between actions.
