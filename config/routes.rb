@@ -15,6 +15,7 @@ Rails.application.routes.draw do
     post    '/photos/bucket/like'               => 'photos#bucket_like'
     post    '/photos/bucket/rotate/'            => 'photos#bucket_rotate'
 
+    get     '/photos/stats'                     => 'photos#stats'
     resources :photos
     get     '/photos/:id/rotate/(:degrees)'     => 'photos#rotate'
     post    '/photos/:id/comment/add'           => 'photos#comment'

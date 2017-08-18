@@ -186,19 +186,29 @@ add:
     sudo systemctl start nfs-kernel-server.service
 
 edit:
+
     sudo nano /etc/exports
+    exportfs
 
 add:
+
     /mnt  * (ro,sync,no_root_squash)
 
 fix in case of following error:
 run on nfs server:
+
     rpcinfo -p
+
 error:
+
     rpcinfo: can't contact portmapper: RPC: Remote system error - No such file or directory
+
 run on nfs server:
 
+    sudo update-rc.d rpcbind enable && sudo update-rc.d nfs-common enable
+
 Make sure the NFS server is running:
+
     sudo service nfs-kernel-server status
     sudo service nfs-kernel-server stop
     sudo service nfs-kernel-server start

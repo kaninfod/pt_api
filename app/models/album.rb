@@ -32,6 +32,11 @@ class Album < ActiveRecord::Base
                 .joins(join_sourcecomment)
                 .where(conditions)
                 .distinct(:id)
+                .includes(:facets)
+                .includes(:location)
+                .includes(facets: :source_tag)
+                .includes(facets: :source_comment)
+                # .references(:facets)
   end
 
   def conditions
@@ -124,7 +129,6 @@ class Album < ActiveRecord::Base
     constraint_location = t_photo.create_on(t_photo[:location_id].eq(t_location[:id]))
     t_photo.create_join(t_location, constraint_location, Arel::Nodes::InnerJoin)
   end
-
 
   def join_facet
     constraint_facet = t_facet.create_on(t_photo[:id].eq(t_facet[:photo_id]))

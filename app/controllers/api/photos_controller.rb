@@ -1,6 +1,6 @@
 
   class API::PhotosController < ApplicationController
-    # include BucketActions
+    skip_before_action :authenticate_request, only: :stats
     include Response
     include ExceptionHandler
     set_pagination_headers :photos, only: [:index]
@@ -15,16 +15,23 @@
       :tag, :untag
    ]
 
+    def stats
+      render html: 'yo'
+    end
+
     #GET /api/photos/
     def index
-      # @searchparams = {}
       @album_hash = {}
       @order = "desc"
       get_album_hash
       @album = Album.new(@album_hash)
       #Get photos
-      @photos = @album.album_photos.where('photos.status != ? or photos.status is ?', 1, nil).order(date_taken: @order).paginate(:page => params[:page], :per_page=>params[:photosPerPage])
-      render json: @photos
+      @photos = @album
+              .album_photos
+              .where('photos.status != ? or photos.status is ?', 1, nil)
+              .order(date_taken: @order)
+              .paginate(:page => params[:page], :per_page=>params[:photosPerPage])
+      render json: @photos, include: ['locations', 'facets']
     end
 
 # Single photo actions

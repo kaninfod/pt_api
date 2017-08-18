@@ -49,7 +49,7 @@ gem 'flickraw', '~> 0.9.8'
 gem 'dropbox-sdk'
 
 gem 'mysql2'
-
+gem 'rack-mini-profiler'
 gem "rails-settings-cached"
 
 gem 'jwt'
@@ -59,7 +59,8 @@ gem 'concurrent-ruby'
 
 gem "active_model_serializers"
 
-gem 'dotenv-rails', :groups => [:development, :test, :production]
+# gem 'dotenv-rails', :groups => [:development, :test, :production]
+
 
 group :test do
   gem 'shoulda-matchers', '~> 3.0', require: false
