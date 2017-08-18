@@ -49,7 +49,7 @@ gem 'flickraw', '~> 0.9.8'
 gem 'dropbox-sdk'
 
 gem 'mysql2'
-gem 'rack-mini-profiler'
+
 gem "rails-settings-cached"
 
 gem 'jwt'

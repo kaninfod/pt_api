@@ -118,8 +118,6 @@ GEM
     phashion (1.2.0)
     puma (3.9.1)
     rack (2.0.3)
-    rack-mini-profiler (0.10.5)
-      rack (>= 1.2.0)
     rack-test (0.6.3)
       rack (>= 1.0)
     rails (5.1.2)
@@ -239,7 +237,6 @@ DEPENDENCIES
   mysql2
   phashion
   puma (~> 3.7)
-  rack-mini-profiler
   rack-test
   rails (~> 5.1.2)
   rails-settings-cached
