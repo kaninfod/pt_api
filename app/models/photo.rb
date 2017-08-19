@@ -1,5 +1,6 @@
 class Photo < ActiveRecord::Base
   validate :date_taken_is_valid_datetime
+  include PhotoQuery
 
   before_destroy :_delete
   before_update :move_by_date, if: :date_taken_changed?
@@ -43,38 +44,6 @@ class Photo < ActiveRecord::Base
     find_by_sql(sql)
   }
 
-  # scope :bucket, -> {joins(:facets).where('facets.type = ?', 'Bucket')}
-  # scope :like, -> { joins(:facets).where('.type = ?', 'Like') }
-  # scope :comment, -> {joins(:facets).where('.type = ?', 'Comment')}
-  # scope :tag, -> {joins(:facets).where('.type = ?', 'Tag')}
-  # scope :album, joins(:albums).where('.field = ?', 'value')
-
-  def self.from_album(album_id)
-    byebug
-
-    album = Album.find(album_id)
-
-    photos = Photo
-      .left_outer_joins(:albums, :facets)
-      .joins(location: [:city, :country])
-      .includes(:facets, :location); nil
-
-
-    if album.like
-      photos = photos.where(photos: {facets: {type: 'Like'}}); nil
-    end
-
-    # if album.tags.count
-    #   photos = photos.where(photos: {facets: {type: 'Like'}})
-    # end
-
-    photos = photos
-      .where("photos.date_taken > #{album.start_date}")
-      .where("photos.date_taken < #{album.end_date}")
-      .or(photos.where(photos: {albums_photos: {album_id: album.id}}))
-    photos = photos.select(:id).distinct
-    return photos
-  end
 
   def bucket_toggle(user)
     _bucket = Bucket.where(photo: self, user: user)

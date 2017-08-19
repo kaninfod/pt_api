@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170814150419) do
+ActiveRecord::Schema.define(version: 20170819130119) do
 
   create_table "albums", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
     t.string "name"
@@ -26,6 +26,7 @@ ActiveRecord::Schema.define(version: 20170814150419) do
     t.string "tags", default: "--- []\n"
     t.boolean "like"
     t.boolean "has_comment"
+    t.integer "size"
   end
 
   create_table "albums_photos", id: false, force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
@@ -74,13 +75,19 @@ ActiveRecord::Schema.define(version: 20170814150419) do
 
   create_table "facets", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
     t.integer "user_id"
-    t.integer "photo_id"
+    t.bigint "photo_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "type"
     t.integer "source_tag_id"
     t.integer "source_comment_id"
+    t.bigint "photos_id"
+    t.bigint "users_id"
+    t.bigint "source_tags_id"
+    t.index ["photos_id"], name: "index_facets_on_photos_id"
+    t.index ["source_tags_id"], name: "index_facets_on_source_tags_id"
     t.index ["user_id", "photo_id", "type", "source_tag_id", "source_comment_id"], name: "user_photo_type_comment_tag", unique: true
+    t.index ["users_id"], name: "index_facets_on_users_id"
   end
 
   create_table "instances", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
@@ -156,7 +163,10 @@ ActiveRecord::Schema.define(version: 20170814150419) do
     t.integer "lg_id"
     t.integer "md_id"
     t.integer "tm_id"
+    t.index ["date_taken"], name: "index_photos_on_date_taken"
     t.index ["location_id"], name: "index_photos_on_location_id"
+    t.index ["phash"], name: "index_photos_on_phash"
+    t.index ["status"], name: "index_photos_on_status"
   end
 
   create_table "settings", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
@@ -226,6 +236,8 @@ ActiveRecord::Schema.define(version: 20170814150419) do
     t.index ["voter_id", "voter_type", "vote_scope"], name: "index_votes_on_voter_id_and_voter_type_and_vote_scope"
   end
 
+  add_foreign_key "facets", "photos", column: "photos_id"
+  add_foreign_key "facets", "users", column: "users_id"
   add_foreign_key "locations", "cities"
   add_foreign_key "locations", "countries"
 end

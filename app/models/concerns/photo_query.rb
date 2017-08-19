@@ -1,38 +1,22 @@
-class Album < ActiveRecord::Base
-  serialize :photo_ids, Array
-  serialize :tags, Array
-  has_and_belongs_to_many :photos, -> { distinct }
-  validates :name, presence: true
-  after_initialize :set_default_values
-  
-  def cover_url
-    if self.size > 0
-      self.album_photos.first.url_md
-    else
-      Photo.null_photo
-    end
-  end
+module PhotoQuery
+  include ActiveSupport::Concern
 
-  def add_photos(photo_ids)
-      if photo = Photo.where(id: photo_ids)
-        self.photos << photo unless self.photos.include?(photo_ids)
-      end
-  end
-
-  def album_photos
+  def self.album_photos(album)
+    @album = album
     result = Photo
-                .joins(join_location)
-                .joins(join_album_photo)
-                .joins(join_facet)
-                .joins(join_sourcetag)
-                .joins(join_sourcecomment)
-                .where(conditions)
-                .distinct(:id)
-                .includes(:facets)
-                .includes(:location)
-                .includes(facets: :source_tag)
-                .includes(facets: :source_comment)
+              .joins(join_location)
+              .joins(join_album_photo)
+              .joins(join_facet)
+              .joins(join_sourcetag)
+              .joins(join_sourcecomment)
+              .where(conditions)
+              .distinct(:id)
+              .includes(:facets)
+              .includes(:location)
+              .includes(facets: :source_tag)
+              .includes(facets: :source_comment)
   end
+
 
   def conditions
     photo_rules = [
@@ -85,39 +69,39 @@ class Album < ActiveRecord::Base
 
 
   def _start_date
-    t_photo[:date_taken].gteq(self.start_date) unless self.start_date.blank?
+    t_photo[:date_taken].gteq(@album.start_date) unless @album.start_date.blank?
   end
 
   def _end_date
-    t_photo[:date_taken].lteq(self.end_date) unless self.end_date.blank?
+    t_photo[:date_taken].lteq(@album.end_date) unless @album.end_date.blank?
   end
 
   def _country
-    t_location[:country_id].eq(self.country) unless (self.country.blank? || self.country == "-1")
+    t_location[:country_id].eq(@album.country) unless (@album.country.blank? || @album.country == "-1")
   end
 
   def _city
-    t_location[:city_id].eq(self.city) unless (self.city.blank? || self.city == "-1")
+    t_location[:city_id].eq(@album.city) unless (@album.city.blank? || @album.city == "-1")
   end
 
   def _make
-    t_photo[:make].eq(self.make) unless self.make.blank?
+    t_photo[:make].eq(@album.make) unless @album.make.blank?
   end
 
   def _tag
-    t_sourcetag[:name].in(self.tags).and(t_facet[:type].eq('Tag')) unless self.tags.length == 0
+    t_sourcetag[:name].in(@album.tags).and(t_facet[:type].eq('Tag')) unless @album.tags.length == 0
   end
 
   def _like
-    t_facet[:type].eq("Like") unless self.like == false
+    t_facet[:type].eq("Like") unless @album.like == false
   end
 
   def _has_comment
-    t_sourcecomment[:name].matches("%#{self.has_comment}%").and(t_facet[:type].eq("Comment")) unless self.has_comment == false
+    t_sourcecomment[:name].matches("%#{@album.has_comment}%").and(t_facet[:type].eq("Comment")) unless @album.has_comment == false
   end
 
   def _album
-    t_album_photo[:album_id].eq(self.id) unless self.id.blank?
+    t_album_photo[:album_id].eq(@album.id) unless @album.id.blank?
   end
 
   def join_location
@@ -170,9 +154,10 @@ class Album < ActiveRecord::Base
   end
 
   private
-    def set_default_values
-      self.like ||= false
-      self.has_comment ||= false
-    end
 
+  def set_default_values
+    @album.like ||= false
+    @album.has_comment ||= false
   end
+
+end
