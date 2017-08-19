@@ -21,7 +21,7 @@ production:
   <<: *default
   username: pi
   password: bart
-  host: 192.168.2.202
+  host: 192.168.2.201
   database:  pt_prod
 
 #

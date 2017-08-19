@@ -6,15 +6,15 @@ class Album < ActiveRecord::Base
   after_initialize :set_default_values
 
   def count
-    return photos.count
+    return 14 #photos.count
   end
 
   def cover_url
-    if self.album_photos.count > 0
-      self.album_photos.first.url_md
-    else
+    # if self.album_photos.count > 0
+    #   self.album_photos.first.url_md
+    # else
       Photo.null_photo
-    end
+    # end
   end
 
   def add_photos(photo_ids)
@@ -36,7 +36,8 @@ class Album < ActiveRecord::Base
                 .includes(:location)
                 .includes(facets: :source_tag)
                 .includes(facets: :source_comment)
-                # .references(:facets)
+                
+
   end
 
   def conditions

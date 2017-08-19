@@ -95,7 +95,14 @@
 
   # /api/photos/bucket
     def bucket
-      @bucket = Photo.joins(:bucket).where('facets.user_id = ?', current_user)
+      @bucket = Photo
+              .joins(:bucket)
+              .where('facets.user_id = ?', current_user)
+              .includes(:facets, :location)
+              .includes(facets: :source_tag)
+              .includes(facets: :source_comment)
+              .includes(location: :city)
+              .includes(location: :country)
       render json: @bucket
     end
 
