@@ -46,7 +46,7 @@
 
     def photos
       @photos = @catalog.photos.paginate(:page => params[:page], :per_page=>60)
-      render json: @photos, each_serializer: PhotoSimpleSerializer
+      render json: @photos, each_serializer: PhotoSerializer
     end
 
     def import

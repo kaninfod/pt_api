@@ -21,7 +21,7 @@
     # GET /albums/:id/photos
     def photos
       @photos = @album.album_photos.paginate(:page => params[:page], :per_page=>60)
-      render json: @photos, each_serializer: PhotoSimpleSerializer
+      render json: @photos, each_serializer: PhotoSerializer
     end
 
     # PUT /albums/:id/bucket
