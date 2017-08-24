@@ -59,6 +59,8 @@ gem 'concurrent-ruby'
 
 gem "active_model_serializers"
 
+
+gem 'lograge'
 # gem 'dotenv-rails', :groups => [:development, :test, :production]
 
 

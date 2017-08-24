@@ -36,6 +36,6 @@ module PtApi
     config.phototank = config_for(:app_phototank)
 
     config.autoload_paths << Rails.root.join('lib')
-    
+
   end
 end

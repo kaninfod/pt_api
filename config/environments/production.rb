@@ -43,6 +43,7 @@ Rails.application.configure do
   # when problems arise.
   config.log_level = :debug
 
+
   # Prepend all log lines with the following tags.
   config.log_tags = [ :request_id ]
 
@@ -72,11 +73,22 @@ Rails.application.configure do
   # require 'syslog/logger'
   # config.logger = ActiveSupport::TaggedLogging.new(Syslog::Logger.new 'app-name')
 
-  if ENV["RAILS_LOG_TO_STDOUT"].present?
-    logger           = ActiveSupport::Logger.new(STDOUT)
-    logger.formatter = config.log_formatter
-    config.logger    = ActiveSupport::TaggedLogging.new(logger)
+  # if ENV["RAILS_LOG_TO_STDOUT"].present?
+  #   logger           = ActiveSupport::Logger.new(STDOUT)
+  #   logger.formatter = config.log_formatter
+  #   config.logger    = ActiveSupport::TaggedLogging.new(logger)
+  # end
+
+  unless Rails.env.test?
+    log_level = String(ENV['LOG_LEVEL'] || "info").upcase
+    config.logger = Logger.new(STDOUT)
+    config.logger.level = Logger.const_get(log_level)
+    config.log_level = log_level
+    config.lograge.enabled = true # see lograge section below...
   end
+
+
+
 
   # Do not dump schema after migrations.
   config.active_record.dump_schema_after_migration = false
