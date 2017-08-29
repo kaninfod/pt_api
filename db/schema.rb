@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170819130119) do
+ActiveRecord::Schema.define(version: 20170829173741) do
 
   create_table "albums", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
     t.string "name"
@@ -55,20 +55,6 @@ ActiveRecord::Schema.define(version: 20170819130119) do
     t.string "name"
   end
 
-  create_table "comments", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
-    t.string "title", limit: 50, default: ""
-    t.text "comment"
-    t.integer "commentable_id"
-    t.string "commentable_type"
-    t.integer "user_id"
-    t.string "role", default: "comments"
-    t.datetime "created_at"
-    t.datetime "updated_at"
-    t.index ["commentable_id"], name: "index_comments_on_commentable_id"
-    t.index ["commentable_type"], name: "index_comments_on_commentable_type"
-    t.index ["user_id"], name: "index_comments_on_user_id"
-  end
-
   create_table "countries", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
     t.string "name"
   end
@@ -79,15 +65,10 @@ ActiveRecord::Schema.define(version: 20170819130119) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "type"
-    t.integer "source_tag_id"
+    t.integer "source_id"
     t.integer "source_comment_id"
-    t.bigint "photos_id"
-    t.bigint "users_id"
-    t.bigint "source_tags_id"
-    t.index ["photos_id"], name: "index_facets_on_photos_id"
-    t.index ["source_tags_id"], name: "index_facets_on_source_tags_id"
-    t.index ["user_id", "photo_id", "type", "source_tag_id", "source_comment_id"], name: "user_photo_type_comment_tag", unique: true
-    t.index ["users_id"], name: "index_facets_on_users_id"
+    t.index ["photo_id"], name: "index_facets_on_photo_id"
+    t.index ["source_id"], name: "index_facets_on_source_id"
   end
 
   create_table "instances", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
@@ -189,25 +170,6 @@ ActiveRecord::Schema.define(version: 20170819130119) do
     t.index ["name"], name: "index_source_tags_on_name", unique: true
   end
 
-  create_table "taggings", id: :integer, force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
-    t.integer "tag_id"
-    t.string "taggable_type"
-    t.integer "taggable_id"
-    t.string "tagger_type"
-    t.integer "tagger_id"
-    t.string "context", limit: 128
-    t.datetime "created_at"
-    t.index ["context"], name: "index_taggings_on_context"
-    t.index ["tag_id", "taggable_id", "taggable_type", "context", "tagger_id", "tagger_type"], name: "taggings_idx", unique: true
-    t.index ["tag_id"], name: "index_taggings_on_tag_id"
-    t.index ["taggable_id", "taggable_type", "context"], name: "index_taggings_on_taggable_id_and_taggable_type_and_context"
-    t.index ["taggable_id", "taggable_type", "tagger_id", "context"], name: "taggings_idy"
-    t.index ["taggable_id"], name: "index_taggings_on_taggable_id"
-    t.index ["taggable_type"], name: "index_taggings_on_taggable_type"
-    t.index ["tagger_id", "tagger_type"], name: "index_taggings_on_tagger_id_and_tagger_type"
-    t.index ["tagger_id"], name: "index_taggings_on_tagger_id"
-  end
-
   create_table "users", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
     t.string "name"
     t.string "provider"
@@ -222,22 +184,6 @@ ActiveRecord::Schema.define(version: 20170819130119) do
     t.index ["token"], name: "index_users_on_token"
   end
 
-  create_table "votes", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
-    t.integer "votable_id"
-    t.string "votable_type"
-    t.integer "voter_id"
-    t.string "voter_type"
-    t.boolean "vote_flag"
-    t.string "vote_scope"
-    t.integer "vote_weight"
-    t.datetime "created_at"
-    t.datetime "updated_at"
-    t.index ["votable_id", "votable_type", "vote_scope"], name: "index_votes_on_votable_id_and_votable_type_and_vote_scope"
-    t.index ["voter_id", "voter_type", "vote_scope"], name: "index_votes_on_voter_id_and_voter_type_and_vote_scope"
-  end
-
-  add_foreign_key "facets", "photos", column: "photos_id"
-  add_foreign_key "facets", "users", column: "users_id"
   add_foreign_key "locations", "cities"
   add_foreign_key "locations", "countries"
 end

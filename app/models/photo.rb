@@ -74,7 +74,7 @@ class Photo < ActiveRecord::Base
     Comment.create(
       photo: self,
       user: user,
-      source_comment: SourceComment.create(name: comment)
+      source_comment: SourceComment.find_or_create_by(name: comment)
     )
   end
 
@@ -215,47 +215,3 @@ class Photo < ActiveRecord::Base
 
 
 end
-
-
-# def add_comment(new_comment, user_id)
-#   puts "new_comment #{new_comment}"
-#   comment = self.comments.create
-#   comment.comment = new_comment
-#   comment.user_id = user_id
-#   comment.save
-#
-#   self.objective_list.add new_comment.scan(/(^\#\w+|(?<=\s)\#\w+)/).join(',')
-#   self.tag_list.add new_comment.scan(/(^\@\w+|(?<=\s)\@\w+)/).join(',')
-#   self.save
-#   return comment
-# end
-#
-# def add_tag(tag)
-#
-#   if tag[0,1] == "@"
-#     self.objective_list.add tag
-#   else
-#     self.tag_list.add tag
-#   end
-#
-#   if self.save
-#     return true
-#   else
-#     return false
-#   end
-# end
-#
-# def remove_tag(tag)
-#
-#   if tag[0,1] == "@"
-#     self.objective_list.remove tag
-#   else
-#     self.tag_list.remove tag
-#   end
-#
-#   if self.save
-#     return true
-#   else
-#     return false
-#   end
-# end

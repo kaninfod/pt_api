@@ -3,4 +3,5 @@ class PhotoSerializer < ActiveModel::Serializer
 
   has_many :facets
   belongs_to :location
+
 end

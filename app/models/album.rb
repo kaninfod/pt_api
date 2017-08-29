@@ -4,7 +4,7 @@ class Album < ActiveRecord::Base
   has_and_belongs_to_many :photos, -> { distinct }
   validates :name, presence: true
   after_initialize :set_default_values
-  
+
   def cover_url
     if self.size > 0
       self.album_photos.first.url_md
@@ -131,12 +131,12 @@ class Album < ActiveRecord::Base
   end
 
   def join_sourcetag
-    constraint_sourcetag = t_sourcetag.create_on(t_facet[:source_tag_id].eq(t_sourcetag[:id]))
+    constraint_sourcetag = t_sourcetag.create_on(t_facet[:source_id].eq(t_sourcetag[:id]))
     t_facet.create_join(t_sourcetag, constraint_sourcetag, Arel::Nodes::OuterJoin)
   end
 
   def join_sourcecomment
-    constraint_sourcecomment = t_sourcecomment.create_on(t_facet[:source_comment_id].eq(t_sourcecomment[:id]))
+    constraint_sourcecomment = t_sourcecomment.create_on(t_facet[:source_id].eq(t_sourcecomment[:id]))
     t_facet.create_join(t_sourcecomment, constraint_sourcecomment, Arel::Nodes::OuterJoin)
   end
 

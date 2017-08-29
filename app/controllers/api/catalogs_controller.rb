@@ -9,7 +9,7 @@
 
     def index
       @catalogs = Catalog.order(:id).page params[:page]
-      render json: @catalogs
+      render json: @catalogs, root: 'catalogs', meta: _pagi
     end
 
     def show
@@ -46,7 +46,17 @@
 
     def photos
       @photos = @catalog.photos.paginate(:page => params[:page], :per_page=>60)
-      render json: @photos, each_serializer: PhotoSerializer
+      _pagi = {
+        total: @photos.total_entries,
+        total_pages: @photos.total_pages,
+        first_page: @photos.current_page == 1,
+        last_page: @photos.next_page.blank?,
+        previous_page: @photos.previous_page,
+        next_page: @photos.next_page,
+        out_of_bounds: @photos.out_of_bounds?,
+        offset: @photos.offset
+      }
+      render json: @photos, each_serializer: PhotoSerializer, meta: _pagi
     end
 
     def import

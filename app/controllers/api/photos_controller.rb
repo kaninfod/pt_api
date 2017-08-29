@@ -31,14 +31,25 @@
               .where('photos.status != ? or photos.status is ?', 1, nil)
               .order(date_taken: @order)
               .paginate(:page => params[:page], :per_page=>params[:photosPerPage])
-      render json: @photos, include: ['locations', 'facets']
+      _pagi = {
+        total: @photos.total_entries,
+        total_pages: @photos.total_pages,
+        first_page: @photos.current_page == 1,
+        last_page: @photos.next_page.blank?,
+        previous_page: @photos.previous_page,
+        next_page: @photos.next_page,
+        out_of_bounds: @photos.out_of_bounds?,
+        offset: @photos.offset
+      }
+      render json: @photos, include: ['location', 'facets'], meta: _pagi
     end
 
 # Single photo actions
 
     #GET /api/photos/:id
     def show
-      render json: @photo
+      @photo = Photo.find(params[:id])
+      render json: @photo, include: ['location', 'facets']
     end
 
     #DELETE /api/photos/:id
