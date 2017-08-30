@@ -69,7 +69,7 @@ ActiveRecord::Schema.define(version: 20170830091348) do
     t.integer "source_comment_id"
     t.index ["photo_id"], name: "index_facets_on_photo_id"
     t.index ["source_id"], name: "index_facets_on_source_id"
-    t.index ["user_id"], name: "fk_facets_on_user_id"
+    t.index ["user_id"], name: "fk_rails_a4bb3b7eb2"
   end
 
   create_table "instances", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
@@ -185,14 +185,8 @@ ActiveRecord::Schema.define(version: 20170830091348) do
     t.index ["token"], name: "index_users_on_token"
   end
 
-  add_foreign_key "albums_photos", "albums"
-  add_foreign_key "albums_photos", "photos"
-
   add_foreign_key "facets", "users"
-  add_foreign_key "facets", "photos"
-
   add_foreign_key "locations", "cities"
   add_foreign_key "locations", "countries"
-
   add_foreign_key "photos", "locations"
 end

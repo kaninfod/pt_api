@@ -28,8 +28,7 @@
       #Get photos
       @photos = @album
               .album_photos
-              .where('photos.status != ? or photos.status is ?', 1, nil)
-              .order(date_taken: @order)
+              .where('photos.status != ? or photos.status is ?', 1, nil) # .order(date_taken: @order)
               .paginate(:page => params[:page], :per_page=>params[:photosPerPage])
       _pagi = {
         total: @photos.total_entries,
