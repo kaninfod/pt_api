@@ -92,7 +92,7 @@ Rails.application.configure do
   config.lograge.enabled = true
   config.lograge.formatter = Lograge::Formatters::Json.new
 
-  logger.info "Hello from Rails!"
+  # logger.info "Hello from Rails!"
 
 
   # Do not dump schema after migrations.
