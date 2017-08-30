@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170830091348) do
+ActiveRecord::Schema.define(version: 20170830125318) do
 
   create_table "albums", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
     t.string "name"
@@ -185,6 +185,7 @@ ActiveRecord::Schema.define(version: 20170830091348) do
     t.index ["token"], name: "index_users_on_token"
   end
 
+  add_foreign_key "facets", "photos"
   add_foreign_key "facets", "users"
   add_foreign_key "locations", "cities"
   add_foreign_key "locations", "countries"
