@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170830172450) do
+ActiveRecord::Schema.define(version: 20170830212332) do
 
   create_table "albums", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
     t.string "name"
@@ -145,11 +145,9 @@ ActiveRecord::Schema.define(version: 20170830172450) do
     t.integer "lg_id"
     t.integer "md_id"
     t.integer "tm_id"
-    t.bigint "photo_date", null: false
     t.index ["date_taken"], name: "index_photos_on_date_taken"
     t.index ["location_id"], name: "index_photos_on_location_id"
     t.index ["phash"], name: "index_photos_on_phash"
-    t.index ["photo_date"], name: "index_photos_on_photo_date"
     t.index ["status"], name: "index_photos_on_status"
   end
 
