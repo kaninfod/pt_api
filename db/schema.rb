@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170830125318) do
+ActiveRecord::Schema.define(version: 20170830165623) do
 
   create_table "albums", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
     t.string "name"
@@ -145,6 +145,7 @@ ActiveRecord::Schema.define(version: 20170830125318) do
     t.integer "lg_id"
     t.integer "md_id"
     t.integer "tm_id"
+    t.timestamp "photo_date", default: -> { "CURRENT_TIMESTAMP" }, null: false
     t.index ["date_taken"], name: "index_photos_on_date_taken"
     t.index ["location_id"], name: "index_photos_on_location_id"
     t.index ["phash"], name: "index_photos_on_phash"
@@ -185,7 +186,8 @@ ActiveRecord::Schema.define(version: 20170830125318) do
     t.index ["token"], name: "index_users_on_token"
   end
 
-  add_foreign_key "facets", "photos"
+  add_foreign_key "albums_photos", "albums"
+  add_foreign_key "albums_photos", "photos"
   add_foreign_key "facets", "users"
   add_foreign_key "locations", "cities"
   add_foreign_key "locations", "countries"
