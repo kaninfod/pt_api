@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170829173741) do
+ActiveRecord::Schema.define(version: 20170830091348) do
 
   create_table "albums", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
     t.string "name"
@@ -60,7 +60,7 @@ ActiveRecord::Schema.define(version: 20170829173741) do
   end
 
   create_table "facets", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
-    t.integer "user_id"
+    t.bigint "user_id"
     t.bigint "photo_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
@@ -69,6 +69,7 @@ ActiveRecord::Schema.define(version: 20170829173741) do
     t.integer "source_comment_id"
     t.index ["photo_id"], name: "index_facets_on_photo_id"
     t.index ["source_id"], name: "index_facets_on_source_id"
+    t.index ["user_id"], name: "fk_rails_a4bb3b7eb2"
   end
 
   create_table "instances", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
@@ -131,7 +132,7 @@ ActiveRecord::Schema.define(version: 20170829173741) do
     t.datetime "updated_at", null: false
     t.string "file_extension"
     t.integer "file_size"
-    t.integer "location_id"
+    t.bigint "location_id"
     t.string "make"
     t.string "model"
     t.integer "original_height"
@@ -184,6 +185,10 @@ ActiveRecord::Schema.define(version: 20170829173741) do
     t.index ["token"], name: "index_users_on_token"
   end
 
+  add_foreign_key "albums_photos", "albums"
+  add_foreign_key "albums_photos", "photos"
+  add_foreign_key "facets", "users"
   add_foreign_key "locations", "cities"
   add_foreign_key "locations", "countries"
+  add_foreign_key "photos", "locations"
 end

@@ -46,7 +46,7 @@ Rails.application.configure do
   config.file_watcher = ActiveSupport::EventedFileUpdateChecker
 
   unless Rails.env.test?
-    log_level = String(ENV['LOG_LEVEL'] || "info").upcase
+    log_level = String(ENV['LOG_LEVEL'] || "debug").upcase
     config.logger = Logger.new(STDOUT)
     config.logger.level = Logger.const_get(log_level)
     config.log_level = log_level
