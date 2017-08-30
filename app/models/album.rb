@@ -26,7 +26,8 @@ class Album < ActiveRecord::Base
                 .joins(join_facet)
                 .joins(join_sourcetag)
                 .joins(join_sourcecomment)
-                .where(conditions) #               .distinct(:id)
+                .where(conditions) #
+                .distinct(:id)
                 .includes(:facets)
                 .includes(:location)
                 .includes(facets: :source_tag)
