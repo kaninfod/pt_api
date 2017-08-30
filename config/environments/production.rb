@@ -79,15 +79,20 @@ Rails.application.configure do
   #   config.logger    = ActiveSupport::TaggedLogging.new(logger)
   # end
 
-  unless Rails.env.test?
-    log_level = String(ENV['LOG_LEVEL'] || "info").upcase
-    config.logger = Logger.new(STDOUT)
-    config.logger.level = Logger.const_get(log_level)
-    config.log_level = log_level
-    config.lograge.enabled = true # see lograge section below...
-  end
+  # unless Rails.env.test?
+  #   log_level = String(ENV['LOG_LEVEL'] || "info").upcase
+  #   config.logger = Logger.new(STDOUT)
+  #   config.logger.level = Logger.const_get(log_level)
+  #   config.log_level = log_level
+  #   config.lograge.enabled = true # see lograge section below...
+  # end
 
+  require 'syslogger'
+  config.logger = Syslogger.new("rails-application",Syslog::LOG_PID, Syslog::LOG_LOCAL7)
+  config.lograge.enabled = true
+  config.lograge.formatter = Lograge::Formatters::Json.new
 
+  logger.info "Hello from Rails!"
 
 
   # Do not dump schema after migrations.

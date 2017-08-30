@@ -62,7 +62,7 @@ gem "active_model_serializers"
 
 gem 'lograge'
 # gem 'dotenv-rails', :groups => [:development, :test, :production]
-
+gem 'syslogger', '~> 1.6.0', :groups => [:production]
 
 group :test do
   gem 'shoulda-matchers', '~> 3.0', require: false
