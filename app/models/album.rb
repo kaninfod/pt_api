@@ -15,6 +15,40 @@ class Album < ActiveRecord::Base
     end
   end
 
+  def x
+    p = Photo
+      .joins(:facets)
+      .includes(facets: :comment)
+
+
+    p = p.where('date_taken > ?', self.start_date) unless self.start_date.blank?
+    p = p.where('date_taken < ?', self.end_date) unless self.end_date.blank?
+
+    if !(self.city.blank? || self.city == "-1" || self.country.blank? || self.country == "-1")
+      p = p.joins(:location)
+      p = p.where('locations.city_id > ?', self.city) unless (self.city.blank? || self.city == "-1")
+      p = p.where('locations.country_id > ?', self.country) unless (self.country.blank? || self.country == "-1")
+      p = p.includes(:location)
+    end
+
+
+    if self.tags.length > 0
+      p = p.joins(facets: :tag)
+      p = p.where('tags.name': self.tags).where('facets.type = ?', 'TagFacet')
+      p = p.includes(facets: :tag)
+    end
+
+    # if self.has_comment
+    #   p = p.joins(facets: :comment)
+    #   p = p.where('facets.type = ?', 'CommentFacet')
+    #   p = p.includes(facets: :comment)
+    # end
+
+
+    return p
+
+  end
+
   # def add_photos(photo_ids)
   #     if photo = Photo.where(id: photo_ids)
   #       self.photos << photo unless self.photos.include?(photo_ids)
@@ -29,11 +63,11 @@ class Album < ActiveRecord::Base
               .joins(join_comment)
               .where(conditions) #
               .distinct(:id)
-              .includes(:facets)
-              .includes(:location)
-              .includes(facets: :tag)
-              .includes(facets: :comment)
-              .includes(facets: :album)
+              # .includes(:facets)
+              # .includes(:location)
+              # .includes(facets: :tag)
+              # .includes(facets: :comment)
+              # .includes(facets: :album)
   end
 
   def conditions

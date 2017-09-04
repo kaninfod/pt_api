@@ -29,19 +29,28 @@
       @photos = @album
               .album_photos
               .where('photos.status != ? or photos.status is ?', 1, nil)
+              .includes(:facets)
+              .includes(:location)
+              .includes(location: :city)
+              .includes(location: :country)
+              .includes(facets: :user)
+              .includes(facets: :tag)
+              .includes(facets: :comment)
+              .includes(facets: :album)
               .order(date_taken: @order)
               .paginate(:page => params[:page], :per_page=>params[:photosPerPage])
-      _pagi = {
-        total: @photos.total_entries,
-        total_pages: @photos.total_pages,
-        first_page: @photos.current_page == 1,
-        last_page: @photos.next_page.blank?,
-        previous_page: @photos.previous_page,
-        next_page: @photos.next_page,
-        out_of_bounds: @photos.out_of_bounds?,
-        offset: @photos.offset
-      }
-      render json: @photos, include: ['location', 'facets', 'tags'], meta: _pagi
+
+      # _pagi = {
+      #   total: @photos.total_entries,
+      #   total_pages: @photos.total_pages,
+      #   first_page: @photos.current_page == 1,
+      #   last_page: @photos.next_page.blank?,
+      #   previous_page: @photos.previous_page,
+      #   next_page: @photos.next_page,
+      #   out_of_bounds: @photos.out_of_bounds?,
+      #   offset: @photos.offset
+      # }
+      render json: @photos, include: ['location', 'facets', 'tags'], meta: get_pagination
     end
 
 # Single photo actions
@@ -112,9 +121,11 @@
               .where('facets.user_id = ?', current_user)
               .includes(:facets, :location)
               .includes(facets: :tag)
+              .includes(facets: :user)
               .includes(facets: :comment)
               .includes(location: :city)
               .includes(location: :country)
+
       render json: @bucket
     end
 
@@ -144,6 +155,20 @@
 
 
     private
+
+    def get_pagination
+      {
+        total: @photos.total_entries,
+        total_pages: @photos.total_pages,
+        first_page: @photos.current_page == 1,
+        last_page: @photos.next_page.blank?,
+        previous_page: @photos.previous_page,
+        next_page: @photos.next_page,
+        out_of_bounds: @photos.out_of_bounds?,
+        offset: @photos.offset
+      }
+    end
+
       # Use callbacks to share common setup or constraints between actions.
       def set_photo
         @photo = Photo.find(params[:id])

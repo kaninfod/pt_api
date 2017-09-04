@@ -8,7 +8,7 @@ class MigrateInstancesToFacets < ActiveRecord::Migration[5.1]
       Instance.find_each do |instance|
         CatalogFacet.create(
           photo: instance.photo,
-          source_id: instance.catalog.id,
+          catalog: instance.catalog,
           user: user
         )
         instance.update(rev: true)
