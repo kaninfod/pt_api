@@ -9,7 +9,7 @@ class Album < ActiveRecord::Base
 
   def cover_url
     if self.size > 0
-      self.album_photos.first.url_md
+      Photo.null_photo#self.album_photos.first.url_md
     else
       Photo.null_photo
     end
