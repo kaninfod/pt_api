@@ -20,11 +20,18 @@ class MasterImportPhoto < AppJob
         photo = Photo.find(photo_id)
       end
 
-      instance = Instance.create(
+      # instance = Instance.create(
+      #   photo_id: photo.id,
+      #   catalog_id: Catalog.master.id
+      # )
+
+      CatalogFacet.create(
         photo_id: photo.id,
-        catalog_id: Catalog.master.id
+        catalog_id: Catalog.master.id,
+        user: User.admin,
       )
-      
+
+
       UtilLocator.perform_later photo.id
       @job_db.update(jobable_id: photo.id, jobable_type: "Photo")
     rescue Exception => e

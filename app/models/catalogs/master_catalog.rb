@@ -8,7 +8,7 @@ class MasterCatalog < Catalog
       logger.info "Starting master import from MasterCatalog"
       import_path = Rails.configuration.phototank["incoming"]
 
-      response = MasterImportSpawn.perform_later import_path, photo_id = nil, import_mode=self.import_mode
+      MasterImportSpawn.perform_later import_path, photo_id = nil, import_mode=self.import_mode
     rescue Exception => e
       return e
     end

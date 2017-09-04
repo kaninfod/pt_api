@@ -41,7 +41,7 @@
         out_of_bounds: @photos.out_of_bounds?,
         offset: @photos.offset
       }
-      render json: @photos, include: ['location', 'facets'], meta: _pagi
+      render json: @photos, include: ['location', 'facets', 'tags'], meta: _pagi
     end
 
 # Single photo actions
@@ -80,7 +80,7 @@
 
     # GET /api/photos/taglist
     def taglist
-      tags = SourceTag.all
+      tags = Tag.all
       render json: tags
     end
 
@@ -107,11 +107,12 @@
   # /api/photos/bucket
     def bucket
       @bucket = Photo
-              .joins(:bucket)
+              .joins(:facets)
+              .where('facets.type = ?', 'BucketFacet')
               .where('facets.user_id = ?', current_user)
               .includes(:facets, :location)
-              .includes(facets: :source_tag)
-              .includes(facets: :source_comment)
+              .includes(facets: :tag)
+              .includes(facets: :comment)
               .includes(location: :city)
               .includes(location: :country)
       render json: @bucket

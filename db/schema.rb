@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170830212332) do
+ActiveRecord::Schema.define(version: 20170901120148) do
 
   create_table "albums", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
     t.string "name"
@@ -55,6 +55,10 @@ ActiveRecord::Schema.define(version: 20170830212332) do
     t.string "name"
   end
 
+  create_table "comments", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
+    t.string "name"
+  end
+
   create_table "countries", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
     t.string "name"
   end
@@ -66,9 +70,9 @@ ActiveRecord::Schema.define(version: 20170830212332) do
     t.datetime "updated_at", null: false
     t.string "type"
     t.integer "source_id"
-    t.integer "source_comment_id"
     t.index ["photo_id"], name: "index_facets_on_photo_id"
     t.index ["source_id"], name: "index_facets_on_source_id"
+    t.index ["type"], name: "index_facets_on_type"
     t.index ["user_id"], name: "fk_rails_a4bb3b7eb2"
   end
 
@@ -161,14 +165,10 @@ ActiveRecord::Schema.define(version: 20170830212332) do
     t.index ["thing_type", "thing_id", "var"], name: "index_settings_on_thing_type_and_thing_id_and_var", unique: true
   end
 
-  create_table "source_comments", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
-    t.string "name"
-  end
-
-  create_table "source_tags", id: :integer, force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
+  create_table "tags", id: :integer, force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
     t.string "name", collation: "utf8_bin"
     t.integer "taggings_count", default: 0
-    t.index ["name"], name: "index_source_tags_on_name", unique: true
+    t.index ["name"], name: "index_tags_on_name", unique: true
   end
 
   create_table "users", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|

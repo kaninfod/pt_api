@@ -1,4 +1,4 @@
-class LikeSerializer < ActiveModel::Serializer
+class LikeFacetSerializer < ActiveModel::Serializer
   attributes :id, :type, :user
 
   def user

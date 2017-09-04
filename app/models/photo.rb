@@ -1,19 +1,22 @@
 class Photo < ActiveRecord::Base
   validate :date_taken_is_valid_datetime
-  include PhotoQuery
 
-  before_destroy :_delete
   before_update :move_by_date, if: :date_taken_changed?
 
-  has_and_belongs_to_many :albums
   belongs_to :location, default: -> { Location.no_location }
-  has_many :instances
-  has_many :catalogs, through: :instances
-  has_many :facets
-  has_many :tags
-  has_one  :bucket
-  has_one  :like
-  has_many :comments
+
+  has_many :facets, dependent: :destroy
+  has_many :tag_facets
+  has_one  :bucket_facet
+  has_one  :like_facet
+  has_many :comment_facets
+  has_many :album_facets
+  has_many :catalog_facets
+
+  has_many :catalogs, through: :catalog_facets, foreign_key: :source_id
+  has_many :albums, through: :album_facets, foreign_key: :source_id
+  has_many :tags, through: :tag_facets, foreign_key: :source_id
+  has_many :comments, through: :comment_facets, foreign_key: :source_id
 
   has_many :jobs, as: :jobable
 
@@ -31,70 +34,52 @@ class Photo < ActiveRecord::Base
     ary.delete([nil])
     ary.sort_by{|el| el[0] }
   }
-  scope :years, -> {
-    sql = "select distinct(year(date_taken)) as value from photos order by value;"
-    find_by_sql(sql)
-  }
-  scope :months, -> (year) {
-    sql = "select distinct(month(date_taken)) as value from photos where year(date_taken) = #{year} order by value;"
-    find_by_sql(sql)
-  }
-  scope :days, -> (year, month) {
-    sql = "select distinct(day(date_taken)) as value from photos where year(date_taken) = #{year} and month(date_taken) = #{month} order by value;"
-    find_by_sql(sql)
-  }
-
 
   def bucket_toggle(user)
-    _bucket = Bucket.where(photo: self, user: user)
+    _bucket = BucketFacet.where(photo: self, user: user)
     if _bucket.present?
       _bucket.first.destroy
     else
-      Bucket.create(photo: self, user: user)
+      BucketFacet.create(photo: self, user: user)
     end
     self
   end
 
   def like_toggle(user)
-    _like = Like.where(photo: self, user: user)
+    _like = LikeFacet.where(photo: self, user: user)
     if _like.present?
       _like.first.destroy
     else
-      Like.create(photo: self, user: user)
+      LikeFacet.create(photo: self, user: user)
     end
     self
   end
 
-  def like(user)
-    Like.create(photo: self, user: user)
-    self
-  end
-
   def add_comment(user, comment)
-    Comment.create(
+    CommentFacet.create(
       photo: self,
       user: user,
-      source_comment: SourceComment.find_or_create_by(name: comment)
+      comment: Comment.find_or_create_by(name: comment)
     )
   end
 
   def uncomment(facet_id)
-    _comment = Comment.where(photo: self, id: facet_id)
+    _comment = CommentFacet.where(photo: self, id: facet_id)
     if _comment.present?
       _comment.first.destroy
     end
   end
 
   def add_tag(user, tag)
-    Tag.create(
+    TagFacet.create(
       photo: self,
       user: user,
-      source_tag: SourceTag.find_or_create_by(name: tag)
+      tag: Tag.find_or_create_by(name: tag)
     )
   end
 
   def untag(facet_id)
-    _tag = Tag.where(photo: self, id: facet_id)
+    _tag = TagFacet.where(photo: self, id: facet_id)
     if _tag.present?
       _tag.first.destroy
     end
@@ -201,17 +186,4 @@ class Photo < ActiveRecord::Base
     def move_by_date
       PhotoMoveByDate.perform_later self.id
     end
-
-    def _delete
-      #Always call destroy!! this is called by the callback.
-      begin
-        self.instances.each do |instance|
-          instance.destroy
-        end
-      rescue Exception => e
-        logger.debug "#{e}"
-      end
-    end
-
-
 end

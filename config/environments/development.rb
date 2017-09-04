@@ -50,7 +50,7 @@ Rails.application.configure do
     config.logger = Logger.new(STDOUT)
     config.logger.level = Logger.const_get(log_level)
     config.log_level = log_level
-    config.lograge.enabled = true # see lograge section below...
+    config.lograge.enabled = false # see lograge section below...
   end
 
 end

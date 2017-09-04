@@ -1,4 +1,4 @@
-class CommentSerializer < ActiveModel::Serializer
+class CommentFacetSerializer < ActiveModel::Serializer
   attributes :id, :type, :created, :name, :user
 
   def user

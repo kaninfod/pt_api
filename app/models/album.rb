@@ -1,7 +1,9 @@
 class Album < ActiveRecord::Base
-  serialize :photo_ids, Array
   serialize :tags, Array
-  has_and_belongs_to_many :photos, -> { distinct }
+
+  has_many :facets, -> { where type: 'AlbumFacet' }, class_name: 'Facet', foreign_key: :source_id
+  has_many :photos, through: :facets, foreign_key: :source_id
+
   validates :name, presence: true
   after_initialize :set_default_values
 
@@ -13,30 +15,29 @@ class Album < ActiveRecord::Base
     end
   end
 
-  def add_photos(photo_ids)
-      if photo = Photo.where(id: photo_ids)
-        self.photos << photo unless self.photos.include?(photo_ids)
-      end
-  end
+  # def add_photos(photo_ids)
+  #     if photo = Photo.where(id: photo_ids)
+  #       self.photos << photo unless self.photos.include?(photo_ids)
+  #     end
+  # end
 
   def album_photos
     result = Photo
-                .joins(join_location)
-                .joins(join_album_photo)
-                .joins(join_facet)
-                .joins(join_sourcetag)
-                .joins(join_sourcecomment)
-                .where(conditions) #
-                .distinct(:id)
-                .includes(:facets)
-                .includes(:location)
-                .includes(facets: :source_tag)
-                .includes(facets: :source_comment)
+              .joins(join_location) #.joins(join_album_photo)
+              .joins(join_facet)
+              .joins(join_tag)
+              .joins(join_comment)
+              .where(conditions) #
+              .distinct(:id)
+              .includes(:facets)
+              .includes(:location)
+              .includes(facets: :tag)
+              .includes(facets: :comment)
+              .includes(facets: :album)
   end
 
   def conditions
     photo_rules = [
-      { :operator => :and, :method => :_start_date },
       { :operator => :and, :method => :_start_date },
       { :operator => :and, :method => :_end_date   },
       { :operator => :and, :method => :_country    },
@@ -105,7 +106,7 @@ class Album < ActiveRecord::Base
   end
 
   def _tag
-    t_sourcetag[:name].in(self.tags).and(t_facet[:type].eq('Tag')) unless self.tags.length == 0
+    t_tag[:name].in(self.tags).and(t_facet[:type].eq('Tag')) unless self.tags.length == 0
   end
 
   def _like
@@ -113,11 +114,11 @@ class Album < ActiveRecord::Base
   end
 
   def _has_comment
-    t_sourcecomment[:name].matches("%#{self.has_comment}%").and(t_facet[:type].eq("Comment")) unless self.has_comment == false
+    t_comment[:name].matches("%#{self.has_comment}%").and(t_facet[:type].eq("CommentFacet")) unless self.has_comment == false
   end
 
   def _album
-    t_album_photo[:album_id].eq(self.id) unless self.id.blank?
+    t_facet[:source_id].eq(self.id).and(t_facet[:type].eq("AlbumFacet")) unless self.id.blank?
   end
 
   def join_location
@@ -130,24 +131,26 @@ class Album < ActiveRecord::Base
     t_photo.create_join(t_facet, constraint_facet, Arel::Nodes::OuterJoin)
   end
 
-  def join_sourcetag
-    constraint_sourcetag = t_sourcetag.create_on(t_facet[:source_id].eq(t_sourcetag[:id]))
-    t_facet.create_join(t_sourcetag, constraint_sourcetag, Arel::Nodes::OuterJoin)
+  def join_tag
+    constraint_tag = t_tag.create_on(t_facet[:source_id].eq(t_tag[:id]))
+    t_facet.create_join(t_tag, constraint_tag, Arel::Nodes::OuterJoin)
   end
 
-  def join_sourcecomment
-    constraint_sourcecomment = t_sourcecomment.create_on(t_facet[:source_id].eq(t_sourcecomment[:id]))
-    t_facet.create_join(t_sourcecomment, constraint_sourcecomment, Arel::Nodes::OuterJoin)
+  def join_comment
+    constraint_comment = t_comment.create_on(t_facet[:source_id].eq(t_comment[:id]))
+    t_facet.create_join(t_comment, constraint_comment, Arel::Nodes::OuterJoin)
   end
 
   def join_album_photo
-    constraint_album_photo = t_album_photo.create_on(t_photo[:id].eq(t_album_photo[:photo_id]))
-    t_photo.create_join(t_album_photo, constraint_album_photo, Arel::Nodes::OuterJoin)
+    #constraint_album_photo = t_facet.create_on(t_photo[:id].eq(t_facet[:photo_id]))
+    #t_photo.create_join(t_album_photo, constraint_album_photo, Arel::Nodes::OuterJoin)
+    # constraint_album_photo = t_album_photo.create_on(t_photo[:id].eq(t_album_photo[:photo_id]))
+    # t_photo.create_join(t_album_photo, constraint_album_photo, Arel::Nodes::OuterJoin)
   end
 
-  def t_album_photo
-    Arel::Table.new("albums_photos")
-  end
+  # def t_album_photo
+  #   Arel::Table.new("albums_photos")
+  # end
 
   def t_photo
     Photo.arel_table
@@ -161,12 +164,12 @@ class Album < ActiveRecord::Base
     Facet.arel_table
   end
 
-  def t_sourcetag
-    Arel::Table.new("source_tags")
+  def t_tag
+    Arel::Table.new("tags")
   end
 
-  def t_sourcecomment
-    Arel::Table.new("source_comments")
+  def t_comment
+    Arel::Table.new("comments")
   end
 
   private
@@ -175,4 +178,4 @@ class Album < ActiveRecord::Base
       self.has_comment ||= false
     end
 
-  end
+end

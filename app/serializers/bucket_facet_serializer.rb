@@ -1,4 +1,4 @@
-class BucketSerializer < ActiveModel::Serializer
+class BucketFacetSerializer < ActiveModel::Serializer
   attributes :id, :photo_id, :type, :user
 
   def user

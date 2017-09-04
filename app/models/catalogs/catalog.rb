@@ -4,18 +4,14 @@ class Catalog < ActiveRecord::Base
   serialize :watch_path, Array
   serialize :sync_from_albums, Array
 
-  has_many :instances
-  has_many :photos, through: :instances
+  has_many :facets, -> { where type: 'CatalogFacet' }, class_name: 'Facet', foreign_key: :source_id
+  has_many :photos, through: :facets, foreign_key: :source_id
+
+  # has_many :instances
+  # has_many :photos, through: :instances
   has_many :jobs, as: :jobable
   belongs_to  :user
 
-  # scope :photos, -> { Photo.joins(:instances).where('catalog_id=?', self.id) }
-
-  # validate :only_one_master_catalog
-
-  def my_test
-    get_hello
-  end
 
   def cover_url
     if self.photos.count > 0
@@ -52,14 +48,4 @@ class Catalog < ActiveRecord::Base
     end
   end
 
-  protected
-  # def only_one_master_catalog
-  #   #return unless default?
-  #
-  #   if default? and Catalog.master
-  #     # Catalog.master.update(default: false)
-  #   elsif not default? and  Catalog.master == self
-  #     errors.add(:default, 'cannot have another active game')
-  #   end
-  # end
 end

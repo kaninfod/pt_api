@@ -1,6 +1,4 @@
-class Like < Facet
-  belongs_to :photo
-  belongs_to :user
+class LikeFacet < Facet
   validates :user_id, uniqueness: { scope: :photo,
     message: "This like exists already" }
 end
