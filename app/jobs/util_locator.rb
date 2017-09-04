@@ -5,11 +5,13 @@ class UtilLocator < AppJob
   def perform(photo_id)
     begin
       @photo = Photo.find(photo_id)
-      
+
       location = get_location
 
-      @photo.location = location
-      @photo.save
+      @photo.set_location(User.admin, location.id)
+
+      # @photo.location = location
+      # @photo.save
 
       @job_db.update(jobable_id: @photo.id, jobable_type: "Photo")
     rescue Exception => e

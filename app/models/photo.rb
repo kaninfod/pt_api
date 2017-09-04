@@ -3,7 +3,7 @@ class Photo < ActiveRecord::Base
 
   before_update :move_by_date, if: :date_taken_changed?
 
-  belongs_to :location, default: -> { Location.no_location }
+  # belongs_to :location, default: -> { Location.no_location }
 
   has_many :facets, dependent: :destroy
   has_many :tag_facets
@@ -11,11 +11,13 @@ class Photo < ActiveRecord::Base
   has_one  :like_facet
   has_many :comment_facets
   has_many :album_facets
+  has_one  :location_facet
   has_many :catalog_facets
 
   has_many :catalogs, through: :catalog_facets, foreign_key: :source_id
-  has_many :albums, through: :album_facets, foreign_key: :source_id
-  has_many :tags, through: :tag_facets, foreign_key: :source_id
+  has_many :albums,   through: :album_facets,   foreign_key: :source_id
+  has_one  :location, through: :location_facet, foreign_key: :source_id
+  has_many :tags,     through: :tag_facets,     foreign_key: :source_id
   has_many :comments, through: :comment_facets, foreign_key: :source_id
 
   has_many :jobs, as: :jobable
@@ -35,23 +37,31 @@ class Photo < ActiveRecord::Base
     ary.sort_by{|el| el[0] }
   }
 
+  def add_to_album(user, album_id)
+    _album_facet = AlbumFacet.find_or_create_by(photo: self, source_id: album_id)
+    _album_facet.update(photo: self, user: user, source_id: album_id)
+    self
+  end
+
   def bucket_toggle(user)
-    _bucket = BucketFacet.where(photo: self, user: user)
-    if _bucket.present?
-      _bucket.first.destroy
-    else
-      BucketFacet.create(photo: self, user: user)
-    end
+    _bucket = BucketFacet.find_or_create_by(photo: self, user: user)
+    _bucket.update(photo: self, user: user)
+    self
+  end
+
+  def set_location(user, location_id)
+    _location_facet = LocationFacet.find_or_create_by(photo: self)
+    _location_facet.update(
+      photo: self,
+      user: user,
+      location: Location.find(location_id)
+    )
     self
   end
 
   def like_toggle(user)
-    _like = LikeFacet.where(photo: self, user: user)
-    if _like.present?
-      _like.first.destroy
-    else
-      LikeFacet.create(photo: self, user: user)
-    end
+    _like = LikeFacet.find_or_create_by(photo: self, user: user)
+    _like.update(photo: self, user: user)
     self
   end
 
@@ -175,12 +185,12 @@ class Photo < ActiveRecord::Base
     "/api/photofiles/#{self.send("org_id")}/photoserve"
   end
 
-  def add_to_album(album_id)
-    if Album.where(id: album_id).first
-      album = Album.find(album_id)
-      album.photos << self
-    end
-  end
+  # def add_to_album(album_id)
+  #   if Album.where(id: album_id).first
+  #     album = Album.find(album_id)
+  #     album.photos << self
+  #   end
+  # end
 
   private
     def move_by_date
