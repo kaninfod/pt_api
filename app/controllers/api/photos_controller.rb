@@ -118,8 +118,7 @@
       @bucket = Photo
               .joins(:facets)
               .where('facets.type = ?', 'BucketFacet')
-              .where('facets.user_id = ?', current_user)
-              .includes(:facets, :location)
+              .where('facets.user_id = ?', current_user) #.includes(:facets, :location)
               .includes(facets: :tag)
               .includes(facets: :user)
               .includes(facets: :comment)

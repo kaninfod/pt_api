@@ -1,6 +1,11 @@
 class Location < ActiveRecord::Base
   validates :latitude, :longitude, :country, presence: true
-  has_many :photos
+
+  # has_many :photos
+
+  has_many :facets, -> { where type: 'LocationFacet' }, class_name: 'Facet', foreign_key: :source_id
+  has_many :photos, through: :facets, foreign_key: :source_id
+
   belongs_to :country
   belongs_to :city
   delegate :name, :to => :country, :prefix => true
@@ -31,15 +36,6 @@ class Location < ActiveRecord::Base
     Rails.cache.fetch("no_location", expires_in: 12.hours) do
       return get_no_location
     end
-  end
-
-  def self.typeahead_search(query)
-    match  = Location.where("address LIKE ?", "%#{query}%").select('id, address')
-    n = match.map do |e|
-      {:id=> e.id, :value=>e.address}
-    end
-
-    return n
   end
 
   def get_location

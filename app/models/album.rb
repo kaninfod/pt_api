@@ -57,8 +57,8 @@ class Album < ActiveRecord::Base
 
   def album_photos
     result = Photo
-              .joins(join_location) #.joins(join_album_photo)
               .joins(join_facet)
+              .joins(join_location) #.joins(join_album_photo)
               .joins(join_tag)
               .joins(join_comment)
               .where(conditions) #
@@ -156,8 +156,10 @@ class Album < ActiveRecord::Base
   end
 
   def join_location
-    constraint_location = t_photo.create_on(t_photo[:location_id].eq(t_location[:id]))
+    constraint_location = t_location.create_on(t_facet[:source_id].eq(t_location[:id]))
     t_photo.create_join(t_location, constraint_location, Arel::Nodes::InnerJoin)
+    # constraint_location = t_photo.create_on(t_photo[:location_id].eq(t_location[:id]))
+    # t_photo.create_join(t_location, constraint_location, Arel::Nodes::InnerJoin)
   end
 
   def join_facet
