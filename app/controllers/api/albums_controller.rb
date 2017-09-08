@@ -7,10 +7,10 @@
 
 
     # PUT /albums/:id/photo/:id
-    def add_photo
-      @album.add_photos([params[:photo]])
-      json_response(@album.album_photos)
-    end
+    # def add_photo
+    #   @album.add_photos([params[:photo]])
+    #   json_response(@album.album_photos)
+    # end
 
     # GET /albums
     def index

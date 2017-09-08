@@ -5,7 +5,7 @@ Rails.application.routes.draw do
     get     '/users/from_token'                  => 'users#validate_token'
 
     resources :albums
-    put     '/albums/:id/photo/:photo'  => "albums#add_photo"
+    # put     '/albums/:id/photo/:photo'  => "albums#add_photo"
     put     '/albums/:id/bucket'        => "albums#add_bucket"
     get     '/albums/:id/photos'        => 'albums#photos'
 
@@ -14,10 +14,10 @@ Rails.application.routes.draw do
     get     '/photos/bucket'                    => 'photos#bucket'
     post    '/photos/bucket/like'               => 'photos#bucket_like'
     post    '/photos/bucket/rotate/'            => 'photos#bucket_rotate'
-
     get     '/photos/stats'                     => 'photos#stats'
     resources :photos
-    get     '/photos/:id/rotate/(:degrees)'     => 'photos#rotate'
+    post    '/photos/:id/add_to_album'          => 'photos#add_to_album'
+    post    '/photos/:id/rotate'                => 'photos#rotate'
     post    '/photos/:id/comment/add'           => 'photos#comment'
     delete  '/photos/:id/comment/delete'        => 'photos#uncomment'
     post    '/photos/:id/tag/add'               => 'photos#tag'

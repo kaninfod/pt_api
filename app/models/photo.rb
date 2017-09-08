@@ -44,8 +44,15 @@ class Photo < ActiveRecord::Base
   end
 
   def bucket_toggle(user)
-    _bucket = BucketFacet.find_or_create_by(photo: self, user: user)
-    _bucket.update(photo: self, user: user)
+    _bucket = BucketFacet.find_by(photo: self, user: user)
+    if _bucket
+      _bucket.destroy
+    else
+      BucketFacet.create(
+        user: user,
+        photo: self,
+      )
+    end
     self
   end
 
@@ -60,8 +67,15 @@ class Photo < ActiveRecord::Base
   end
 
   def like_toggle(user)
-    _like = LikeFacet.find_or_create_by(photo: self, user: user)
-    _like.update(photo: self, user: user)
+    _like = LikeFacet.find_by(photo: self, user: user)
+    if _like
+      _like.destroy
+    else
+      LikeFacet.create(
+        user: user,
+        photo: self,
+      )
+    end
     self
   end
 

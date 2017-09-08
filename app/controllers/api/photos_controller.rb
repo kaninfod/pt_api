@@ -58,11 +58,16 @@
       end
     end
 
-    #TODO add id to url
     # /photos/rotate
     def rotate
-      rotate_helper([@photo.id], params[:degrees])
-      render :json => {:status => true}
+      @photo.rotate params[:degrees]
+      render json: @photo
+    end
+
+    # POST /api/photos/:id/add_to_album
+    def add_to_album
+      @photo.add_to_album current_user, params[:album_id]
+      render json: @photo
     end
 
     # POST /api/photos/:id/comment/add

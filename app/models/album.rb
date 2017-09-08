@@ -56,18 +56,23 @@ class Album < ActiveRecord::Base
   # end
 
   def album_photos
-    result = Photo
-              .joins(join_facet)
-              .joins(join_location) #.joins(join_album_photo)
-              .joins(join_tag)
-              .joins(join_comment)
-              .where(conditions) #
-              .distinct(:id)
-              # .includes(:facets)
-              # .includes(:location)
-              # .includes(facets: :tag)
-              # .includes(facets: :comment)
-              # .includes(facets: :album)
+
+    result = Photo.where(conditions).joins(join_facet).distinct(:id)
+
+    if !(self.city.blank? || self.city == "-1" || self.country.blank? || self.country == "-1")
+      result = result.joins(join_location) #.joins(join_album_photo)
+    end
+
+    if self.tags.length > 0
+      result = result.joins(join_tag)
+    end
+
+    if self.has_comment
+      result = result.joins(join_comment)
+    end
+
+    return result
+
   end
 
   def conditions
