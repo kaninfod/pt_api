@@ -45,12 +45,12 @@ Rails.application.configure do
   # routes, locales, etc. This feature depends on the listen gem.
   config.file_watcher = ActiveSupport::EventedFileUpdateChecker
 
-  unless Rails.env.test?
-    log_level = String(ENV['LOG_LEVEL'] || "debug").upcase
-    config.logger = Logger.new(STDOUT)
-    config.logger.level = Logger.const_get(log_level)
-    config.log_level = log_level
-    config.lograge.enabled = false # see lograge section below...
-  end
+  # unless Rails.env.test?
+  #   log_level = String(ENV['LOG_LEVEL'] || "debug").upcase
+  #   config.logger = Logger.new(STDOUT)
+  #   config.logger.level = Logger.const_get(log_level)
+  #   config.log_level = log_level
+  #   config.lograge.enabled = false # see lograge section below...
+  # end
 
 end

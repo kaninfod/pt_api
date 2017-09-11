@@ -1,4 +1,3 @@
-
   class API::PhotosController < ApplicationController
     skip_before_action :authenticate_request, only: :stats
     include Response
@@ -13,42 +12,44 @@
       :like_toggle,
       :bucket_toggle,
       :tag, :untag
-   ]
-
-    def stats
-      render html: 'yo'
-    end
+    ]
 
     #GET /api/photos/
     def index
+
       @album_hash = {}
       @order = "desc"
       get_album_hash
       @album = Album.new(@album_hash)
       #Get photos
+      # .includes(location: :city)
+      # .includes(location: :country)
+
       @photos = @album
-              .album_photos
-              .where('photos.status != ? or photos.status is ?', 1, nil)
+              .album_photos#.where('photos.status != ? or photos.status is ?', 1, nil)
               .includes(:facets)
-              .includes(facets: :location)
-              .includes(location: :city)
-              .includes(location: :country)
-              .includes(facets: :user)
-              .includes(facets: :tag)
-              .includes(facets: :comment)
-              .includes(facets: :album)
               .order(date_taken: @order)
               .paginate(:page => params[:page], :per_page=>params[:photosPerPage])
-
-      render json: @photos, meta: get_pagination
+              # .includes(:like_facet)
+              # .includes(location_facet: :location)
+              # .includes(location: :city)
+              # .includes(facets: :user)
+              # .includes(tag_facets: :tag)
+              # .includes(comment_facets: :comment)
+              # .includes(album_facets: :album)
+      render json: @photos, each_serializer: PhotoListSerializer, meta: get_pagination, include: "facets"
     end
 
 # Single photo actions
 
     #GET /api/photos/:id
     def show
-      @photo = Photo.find(params[:id])
-      render json: @photo, include: ['location', 'facets']
+      @photo = Photo.where(id:params[:id])
+        .includes(facets: :user)
+        .includes(facets: :comment)
+        .includes(facets: :tag)
+        .includes(facets: :album)
+      render json: @photo, include: ['location', 'facets', 'commnets']
     end
 
     #DELETE /api/photos/:id

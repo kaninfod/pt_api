@@ -1,7 +1,7 @@
 class Album < ActiveRecord::Base
   serialize :tags, Array
 
-  has_many :facets, -> { where type: 'AlbumFacet' }, class_name: 'Facet', foreign_key: :source_id
+  has_many :facets, -> { where type: 'AlbumFacet' }, foreign_key: :source_id
   has_many :photos, through: :facets, foreign_key: :source_id
 
   validates :name, presence: true
@@ -15,113 +15,155 @@ class Album < ActiveRecord::Base
     end
   end
 
-  def x
-    p = Photo
-      .joins(:facets)
-      .includes(facets: :comment)
-
-
-    p = p.where('date_taken > ?', self.start_date) unless self.start_date.blank?
-    p = p.where('date_taken < ?', self.end_date) unless self.end_date.blank?
-
-    if !(self.city.blank? || self.city == "-1" || self.country.blank? || self.country == "-1")
-      p = p.joins(:location)
-      p = p.where('locations.city_id > ?', self.city) unless (self.city.blank? || self.city == "-1")
-      p = p.where('locations.country_id > ?', self.country) unless (self.country.blank? || self.country == "-1")
-      p = p.includes(:location)
-    end
-
-
-    if self.tags.length > 0
-      p = p.joins(facets: :tag)
-      p = p.where('tags.name': self.tags).where('facets.type = ?', 'TagFacet')
-      p = p.includes(facets: :tag)
-    end
-
-    # if self.has_comment
-    #   p = p.joins(facets: :comment)
-    #   p = p.where('facets.type = ?', 'CommentFacet')
-    #   p = p.includes(facets: :comment)
-    # end
-
-
-    return p
-
-  end
-
-  # def add_photos(photo_ids)
-  #     if photo = Photo.where(id: photo_ids)
-  #       self.photos << photo unless self.photos.include?(photo_ids)
-  #     end
-  # end
-
   def album_photos
+    @conditions = nil
 
-    result = Photo.where(conditions).joins(join_facet).distinct(:id)
-
-    if !(self.city.blank? || self.city == "-1" || self.country.blank? || self.country == "-1")
-      result = result.joins(join_location) #.joins(join_album_photo)
+    if !(self.country.blank? || self.country == "-1")
+      append_condition(location_condition)
     end
 
-    if self.tags.length > 0
-      result = result.joins(join_tag)
+
+    if !self.tags.empty?
+      append_condition(tag_condition)
     end
 
     if self.has_comment
-      result = result.joins(join_comment)
+      append_condition(comment_condition)
     end
 
+    if self.id
+      append_condition(album_condition)
+    end
+
+    if self.like
+      append_condition(like_condition)
+    end
+
+    result = base_query.where(@conditions)
+
+    # puts result.to_sql
     return result
 
   end
 
-  def conditions
-    photo_rules = [
-      { :operator => :and, :method => :_start_date },
-      { :operator => :and, :method => :_end_date   },
-      { :operator => :and, :method => :_country    },
-      { :operator => :and, :method => :_city       },
-      { :operator => :and, :method => :_make       },
-      { :operator => :or , :method => :_album      },
-    ]
-
-    facet_rules = [
-      { :operator => :or , :method => :_has_comment},
-      { :operator => :or,  :method => :_like       },
-      { :operator => :or , :method => :_tag},
-
-    ]
-
-    photo = process_rules(photo_rules)
-    facet = process_rules(facet_rules)
-
-    if !facet
-        expression = photo
+  def append_condition(new_condition)
+    if !@conditions
+      @conditions = new_condition
     else
-      expression = photo.or(facet)
+      @conditions = @conditions.and(new_condition)
     end
-
-    return expression
   end
 
-  def process_rules(rules)
-    exp = false
-    rules.each do |rule|
-      res = send(rule[:method])
-      if res != nil
-        if !exp
-          exp = res
-        else
-          if rule[:operator] == :and
-            exp = exp.and(res)
-          elsif rule[:operator] == :or
-            exp = exp.or(res)
-          end
-        end
-      end
-    end
-    return exp
+  def base_query()
+    Photo
+      .where(_start_date)
+      .where(_end_date)
+      .where(t_photo[:status].not_eq(1))
   end
+
+  def tag_condition
+    tag_ids = Tag.where(name: self.tags).pluck(:id)
+    _join = t_photo[:id].eq(t_facet[:photo_id])
+    _condition = t_facet[:source_id].in(tag_ids).and(t_facet[:type].eq('TagFacet'))
+    t_facet.project('1').where(_join.and(_condition)).exists
+  end
+
+  def album_condition
+    _join = t_photo[:id].eq(t_facet[:photo_id])
+    _condition = t_facet[:source_id].eq(self.id).and(t_facet[:type].eq('AlbumFacet'))
+    t_facet.project('1').where(_join.and(_condition)).exists
+  end
+
+  def like_condition
+    _join = t_photo[:id].eq(t_facet[:photo_id])
+    _condition = t_facet[:type].eq('LikeFacet')
+    t_facet.project('1').where(_join.and(_condition)).exists
+  end
+
+  def comment_condition
+    _join = t_photo[:id].eq(t_facet[:photo_id])
+    _condition = t_facet[:type].eq('CommentFacet')
+    t_facet.project('1').where(_join.and(_condition)).exists
+  end
+
+  def location_condition
+    if !(self.city.blank? || self.city == "-1")
+      location_id = Location.find_by(city: self.city.to_i).id
+    elsif !(self.country.blank? || self.country == "-1")
+      location_id = Location.find_by(country: self.country.to_i).id
+    end
+    _join = t_photo[:id].eq(t_facet[:photo_id])
+    _condition = t_facet[:source_id].eq(location_id).and(t_facet[:type].eq('LocationFacet'))
+    t_facet.project('1').where(_join.and(_condition)).exists
+  end
+
+  def facet(type, source_id)
+    _join = t_photo[:id].eq(t_facet[:photo_id])
+    _condition = t_facet[:source_id].eq(source_id).and(t_facet[:type].eq(type))
+    t_facet.project('1').where(_join.and(_condition))
+  end
+
+
+
+  # def mandatory_conditions
+  #   photo_rules = [
+  #     { :operator => :and, :method => :_start_date },
+  #     { :operator => :and, :method => :_end_date   },
+  #     { :operator => :and, :method => :_country    },
+  #     { :operator => :and, :method => :_city       },
+  #     { :operator => :and, :method => :_make       },
+  #     { :operator => :or , :method => :_album      },
+  #   ]
+  #   process_rules(photo_rules)
+  # end
+  #
+  # def conditions
+  #   photo_rules = [
+  #     { :operator => :and, :method => :_start_date },
+  #     { :operator => :and, :method => :_end_date   },
+  #     { :operator => :and, :method => :_country    },
+  #     { :operator => :and, :method => :_city       },
+  #     { :operator => :and, :method => :_make       },
+  #     { :operator => :or , :method => :_album      },
+  #   ]
+  #
+  #   facet_rules = [
+  #     { :operator => :or , :method => :_has_comment},
+  #     { :operator => :or,  :method => :_like       },
+  #     { :operator => :or , :method => :_tag},
+  #
+  #   ]
+  #
+  #   photo = process_rules(photo_rules)
+  #   facet = process_rules(facet_rules)
+  #
+  #   if !facet
+  #       expression = photo
+  #   else
+  #     expression = photo.or(facet)
+  #   end
+  #
+  #   return expression
+  # end
+  #
+  # def process_rules(rules)
+  #   exp = false
+  #   rules.each do |rule|
+  #     res = send(rule[:method])
+  #     if res != nil
+  #       if !exp
+  #         exp = res
+  #       else
+  #         if rule[:operator] == :and
+  #           exp = exp.and(res)
+  #         elsif rule[:operator] == :or
+  #           exp = exp.or(res)
+  #         end
+  #       end
+  #     end
+  #   end
+  #   return exp
+  # end
 
 
   def _start_date
@@ -132,13 +174,13 @@ class Album < ActiveRecord::Base
     t_photo[:date_taken].lteq(self.end_date) unless self.end_date.blank?
   end
 
-  def _country
-    t_location[:country_id].eq(self.country) unless (self.country.blank? || self.country == "-1")
-  end
-
-  def _city
-    t_location[:city_id].eq(self.city) unless (self.city.blank? || self.city == "-1")
-  end
+  # def _country
+  #   t_location[:country_id].eq(self.country) unless (self.country.blank? || self.country == "-1")
+  # end
+  #
+  # def _city
+  #   t_location[:city_id].eq(self.city) unless (self.city.blank? || self.city == "-1")
+  # end
 
   def _make
     t_photo[:make].eq(self.make) unless self.make.blank?
@@ -148,70 +190,68 @@ class Album < ActiveRecord::Base
     t_tag[:name].in(self.tags).and(t_facet[:type].eq('Tag')) unless self.tags.length == 0
   end
 
-  def _like
-    t_facet[:type].eq("Like") unless self.like == false
-  end
-
-  def _has_comment
-    t_comment[:name].matches("%#{self.has_comment}%").and(t_facet[:type].eq("CommentFacet")) unless self.has_comment == false
-  end
-
-  def _album
-    t_facet[:source_id].eq(self.id).and(t_facet[:type].eq("AlbumFacet")) unless self.id.blank?
-  end
-
-  def join_location
-    constraint_location = t_location.create_on(t_facet[:source_id].eq(t_location[:id]))
-    t_photo.create_join(t_location, constraint_location, Arel::Nodes::InnerJoin)
-    # constraint_location = t_photo.create_on(t_photo[:location_id].eq(t_location[:id]))
-    # t_photo.create_join(t_location, constraint_location, Arel::Nodes::InnerJoin)
-  end
-
-  def join_facet
-    constraint_facet = t_facet.create_on(t_photo[:id].eq(t_facet[:photo_id]))
-    t_photo.create_join(t_facet, constraint_facet, Arel::Nodes::OuterJoin)
-  end
-
-  def join_tag
-    constraint_tag = t_tag.create_on(t_facet[:source_id].eq(t_tag[:id]))
-    t_facet.create_join(t_tag, constraint_tag, Arel::Nodes::OuterJoin)
-  end
-
-  def join_comment
-    constraint_comment = t_comment.create_on(t_facet[:source_id].eq(t_comment[:id]))
-    t_facet.create_join(t_comment, constraint_comment, Arel::Nodes::OuterJoin)
-  end
-
-  def join_album_photo
-    #constraint_album_photo = t_facet.create_on(t_photo[:id].eq(t_facet[:photo_id]))
-    #t_photo.create_join(t_album_photo, constraint_album_photo, Arel::Nodes::OuterJoin)
-    # constraint_album_photo = t_album_photo.create_on(t_photo[:id].eq(t_album_photo[:photo_id]))
-    # t_photo.create_join(t_album_photo, constraint_album_photo, Arel::Nodes::OuterJoin)
-  end
-
-  # def t_album_photo
-  #   Arel::Table.new("albums_photos")
+  # def _like
+  #   t_facet[:type].eq("Like") unless self.like == false
   # end
+  #
+  # def _has_comment
+  #   t_comment[:name].matches("%#{self.has_comment}%").and(t_facet[:type].eq("CommentFacet")) unless self.has_comment == false
+  # end
+  #
+  # def _album
+  #   t_facet[:source_id].eq(self.id).and(t_facet[:type].eq("AlbumFacet")) unless self.id.blank?
+  # end
+
+  # def join_location
+  #   constraint_location = t_location.create_on(t_facet[:source_id].eq(t_location[:id]))
+  #   t_photo.create_join(t_location, constraint_location, Arel::Nodes::InnerJoin)
+  # end
+  #
+  # def join_facet
+  #   constraint_facet = t_facet.create_on(t_photo[:id].eq(t_facet[:photo_id]))
+  #   t_photo.create_join(t_facet, constraint_facet, Arel::Nodes::OuterJoin)
+  # end
+  #
+  # def join_tag
+  #   constraint_tag = t_tag.create_on(t_facet[:source_id].eq(t_tag[:id]))
+  #   t_facet.create_join(t_tag, constraint_tag, Arel::Nodes::OuterJoin)
+  # end
+  #
+  # def join_comment
+  #   constraint_comment = t_comment.create_on(t_facet[:source_id].eq(t_comment[:id]))
+  #   t_facet.create_join(t_comment, constraint_comment, Arel::Nodes::OuterJoin)
+  # end
+
+  # def join_album_photo
+  #   #constraint_album_photo = t_facet.create_on(t_photo[:id].eq(t_facet[:photo_id]))
+  #   #t_photo.create_join(t_album_photo, constraint_album_photo, Arel::Nodes::OuterJoin)
+  #   # constraint_album_photo = t_album_photo.create_on(t_photo[:id].eq(t_album_photo[:photo_id]))
+  #   # t_photo.create_join(t_album_photo, constraint_album_photo, Arel::Nodes::OuterJoin)
+  # end
+  #
+  # # def t_album_photo
+  # #   Arel::Table.new("albums_photos")
+  # # end
 
   def t_photo
     Photo.arel_table
   end
 
-  def t_location
-    Location.arel_table
-  end
+  # def t_location
+  #   Location.arel_table
+  # end
 
   def t_facet
     Facet.arel_table
   end
 
-  def t_tag
-    Arel::Table.new("tags")
-  end
+  # def t_tag
+  #   Arel::Table.new("tags")
+  # end
 
-  def t_comment
-    Arel::Table.new("comments")
-  end
+  # def t_comment
+  #   Arel::Table.new("comments")
+  # end
 
   private
     def set_default_values
