@@ -1,20 +1,23 @@
 Rails.application.routes.draw do
   namespace :api, constraints: {format: :json} do
 
-    post    '/users/login'                       => 'users#authenticate'
-    get     '/users/from_token'                  => 'users#validate_token'
+    post    '/users/login'                      => 'users#authenticate'
+    get     '/users/from_token'                 => 'users#validate_token'
 
     resources :albums
-    # put     '/albums/:id/photo/:photo'  => "albums#add_photo"
-    put     '/albums/:id/bucket'        => "albums#add_bucket"
-    get     '/albums/:id/photos'        => 'albums#photos'
+    put     '/albums/:id/bucket'                => "albums#add_bucket"
+    get     '/albums/:id/photos'                => 'albums#photos'
 
     get     'pages' => 'pages#index'
     get     '/photos/taglist'                   => 'photos#taglist'
     get     '/photos/bucket'                    => 'photos#bucket'
     post    '/photos/bucket/like'               => 'photos#bucket_like'
     post    '/photos/bucket/rotate/'            => 'photos#bucket_rotate'
-    get     '/photos/stats'                     => 'photos#stats'
+    post    '/photos/bucket/tag/add'            => 'photos#bucket_tag'
+    delete  '/photos/bucket/tag/delete'         => 'photos#bucket_untag'
+    post    '/photos/bucket/comment/add'        => 'photos#bucket_comment'
+    delete  '/photos/bucket/comment/delete'     => 'photos#bucket_uncomment'
+
     resources :photos
     post    '/photos/:id/add_to_album'          => 'photos#add_to_album'
     post    '/photos/:id/rotate'                => 'photos#rotate'
@@ -25,35 +28,34 @@ Rails.application.routes.draw do
     post    '/photos/:id/like/toggle'           => 'photos#like_toggle'
     post    '/photos/:id/bucket/toggle'         => 'photos#bucket_toggle'
 
-
     get     '/catalogs/oauth_callback'
-    get     '/catalogs/:id/import' => 'catalogs#import'
-    get     '/catalogs/:id/photos' => 'catalogs#photos'
+    get     '/catalogs/:id/import'              => 'catalogs#import'
+    get     '/catalogs/:id/photos'              => 'catalogs#photos'
     resources :catalogs
 
     get     '/locations/countries'
     get     '/locations/cities'
     resources :locations
 
-    post    'bucket/:id/toggle'     => 'bucket#toggle'
-    post    'bucket/:id/add'        => 'bucket#add'
-    post    'bucket/add_to_album'   => 'bucket#add_to_album'
-    delete  'bucket/:id/remove'     => 'bucket#remove'
-    post    'bucket/like'           => 'bucket#like'
-    get     'bucket/widget'         => 'bucket#widget'
-    post    '/bucket/rotate'        => 'bucket#rotate'
-    post    'bucket/add_comment'    => 'bucket#add_comment'
-    post    'bucket/add_tag'    => 'bucket#add_tag'
+    # post    'bucket/:id/toggle'     => 'bucket#toggle'
+    # post    'bucket/:id/add'        => 'bucket#add'
+    # post    'bucket/add_to_album'   => 'bucket#add_to_album'
+    # delete  'bucket/:id/remove'     => 'bucket#remove'
+    # post    'bucket/like'           => 'bucket#like'
+    # get     'bucket/widget'         => 'bucket#widget'
+    # post    '/bucket/rotate'        => 'bucket#rotate'
+    # post    'bucket/add_comment'    => 'bucket#add_comment'
+    # post    'bucket/add_tag'    => 'bucket#add_tag'
 
-    post    'bucket/unlike'         => 'bucket#unlike'
-    get     'bucket/list' => 'bucket#list'
-    get     'bucket' => 'bucket#index'
-    get     'bucket/clear' => 'bucket#clear'
-    get     'bucket/count' => 'bucket#count'
-    get     'bucket/save' => 'bucket#save_to_album'
-    get     'bucket/delete_photos' => 'bucket#delete_photos'
-    get     'bucket/edit' => 'bucket#edit'
-    patch   'bucket/update' => 'bucket#update'
+    # post    'bucket/unlike'         => 'bucket#unlike'
+    # get     'bucket/list' => 'bucket#list'
+    # get     'bucket' => 'bucket#index'
+    # get     'bucket/clear' => 'bucket#clear'
+    # get     'bucket/count' => 'bucket#count'
+    # get     'bucket/save' => 'bucket#save_to_album'
+    # get     'bucket/delete_photos' => 'bucket#delete_photos'
+    # get     'bucket/edit' => 'bucket#edit'
+    # patch   'bucket/update' => 'bucket#update'
 
     resources :photofiles
     get     'photofiles/:id/photoserve' => 'photofiles#photoserve'

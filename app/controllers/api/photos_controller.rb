@@ -141,16 +141,56 @@
     # POST /photos/bucket/rotate/
     def bucket_rotate
       degrees = params.require(:degrees)
-      degrees = JSON.parse(degrees)
-      @bucket = Photo.joins(:bucket).where('facets.user_id = ?', current_user)
-      @bucket.each do |photo|
-        photo.rotate(degrees)
+      #@bucket = get_bucket
+      get_bucket.each do |bucket_facet|
+        bucket_facet.photo.rotate(degrees)
       end
       render json: @bucket
     end
 
+    # POST /api/photos/bucket/tag/add
+    def bucket_tag
+      tag = params.require(:tag)
+      get_bucket.each do |bucket_facet|
+        bucket_facet.photo.add_tag current_user, tag
+      end
+      render json: @photo
+    end
+
+    # /api/photos/bucket/tag/delete
+    def bucket_untag
+      #tag_id is a facet_id!!
+      tag_id = params.require(:tag_id)
+      get_bucket.each do |bucket_facet|
+        bucket_facet.photo.untag tag_id
+      end
+      render json: @photo
+    end
+
+    # POST /api/photos/bucket/comment/add
+    def bucket_comment
+      comment = params.require(:comment)
+      get_bucket.each do |bucket_facet|
+        bucket_facet.photo.add_comment current_user, comment
+      end
+      render json: @photo
+    end
+
+    # DELETE /api/photos/bucket/comment/delete
+    def bucket_uncomment
+      #comment_id is a facet_id
+      comment_id = params.require(:comment_id)
+      get_bucket.each do |bucket_facet|
+        bucket_facet.photo.uncomment comment_id
+      end
+      render json: @photo
+    end
 
     private
+
+    def get_bucket
+      BucketFacet.where(user: current_user)
+    end
 
     def get_pagination
       {
