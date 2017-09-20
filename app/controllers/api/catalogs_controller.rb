@@ -14,7 +14,7 @@
 
     def show
       @catalog = Catalog.find(params[:id])
-      render json: @catalog
+      render json: @catalog, root: 'catalogs'
     end
 
     def create
@@ -29,12 +29,12 @@
         new_catalog[:default] = true
         @catalog= Catalog.create!(new_catalog)
       end
-      render json: @catalog
+      render json: @catalog, root: 'catalogs'
     end
 
     def update
       if @catalog.update(catalog_params)
-        render json: @catalog
+        render json: @catalog, root: 'catalogs'
       end
       return
     end

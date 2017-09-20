@@ -1,8 +1,8 @@
 require 'dropbox_sdk'
 class DropboxCatalog < Catalog
-  before_destroy :delete_contents
+  # before_destroy :delete_contents
   serialize :ext_store_data, Hash
-  include PhotoServices
+  include DropboxServices
 
   def oauth_init
     self.appkey = Rails.configuration.dropbox["appkey"]
@@ -29,6 +29,7 @@ class DropboxCatalog < Catalog
       verifier: code,
       dropbox_user_id: response["uid"]
     )
+    LocalCloneInstancesFromCatalogJob.perform_later self.id, self.sync_from_catalog
   end
 
   def import(use_resque=true)
@@ -40,38 +41,37 @@ class DropboxCatalog < Catalog
 
   def import_photo(photo_id)
 
-    # pf = PhotoFilesApi::Api::new
-
     photo = Photo.find(photo_id)
-    instance = photo.instances.where(catalog_id: self.id).first
+    instance = photo.catalog_facets.find_by(catalog: self).instance
     photofile = Photofile.find(photo.org_id)
     photofile_split = photofile.path.split(File::SEPARATOR)
 
-
     dropbox_path = File.join(self.name, photofile_split[-4], photofile_split[-3], photofile_split[-2])
     dropbox_file = File.join(dropbox_path, photofile_split[-1]  )
-    # dropbox_path = File.join(self.path, photofile[:path][0], photofile[:path][1], photofile[:path][2])
-    # dropbox_file = File.join(dropbox_path, "#{photofile[:path][3]}.jpg")
 
+    if instance.status != 1
 
-    if not instance.status #self.exists(dropbox_path)
-      # file = Tempfile.new("flickr.jpg")
       begin
-        # file.binmode
-        # file.write open(photofile[:url]).read
         src = photofile.path
 
-        # response = self.create_folder(dropbox_path)
-        response = self.add_file(src, dropbox_file)
+        response = upload(src, dropbox_file)
 
-        instance.touch
+        _remote_url = response["path_lower"].split('/')
+        _filename = _remote_url.pop
+        _remote_url = File.join(_remote_url)
+        _base_url = "https://www.dropbox.com/home/Apps/Phototank"
+        _remote_url = "#{_base_url}#{_remote_url}?preview=#{_filename}"
+
         instance.update(
-          catalog_id: self.id,
-          path: response["path"],
+          instance_type: "dropbox",
+          photo_url: _remote_url,
+          photo_id: response["path_lower"],
           size: response["bytes"],
           rev: response["rev"],
+          modified: response["server_modified"].to_datetime,
           status: 1
         )
+
       end
     else
       raise "File exists in Dropbox with same revision id and path"
@@ -82,23 +82,13 @@ class DropboxCatalog < Catalog
     true if access_token
   end
 
-  def delete_contents
-    #triggered when entire catalog is deleted
-    instances.each do |instance|
-      instance.destroy
-    end
-  end
-
   def delete_photo(photo_id)
-
     begin
-      instance = self.instances.where(photo_id: photo_id).first
-      if not instance.nil?
-        self.client.file_delete instance.path unless instance.path.nil?
+      byebug
+      if not photo_id.nil?
+        self.client.file_delete photo_id
       end
-      #instance.destroy
     rescue Exception => e
-
       logger.debug "#{e}"
     end
   end

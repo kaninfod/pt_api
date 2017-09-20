@@ -37,6 +37,7 @@ module PtApi
 
     config.autoload_paths << Rails.root.join('lib')
     config.autoload_paths << Rails.root.join('app/models/facets/')
+    config.autoload_paths << Rails.root.join('app/models/catalogs/')
 
   end
 end

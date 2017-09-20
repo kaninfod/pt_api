@@ -22,22 +22,12 @@
       get_album_hash
       @album = Album.new(@album_hash)
       #Get photos
-      # .includes(location: :city)
-      # .includes(location: :country)
-
       @photos = @album
               .album_photos#.where('photos.status != ? or photos.status is ?', 1, nil)
               .includes(:facets)
               .order(date_taken: @order)
               .paginate(:page => params[:page], :per_page=>params[:photosPerPage])
-              # .includes(:like_facet)
-              # .includes(location_facet: :location)
-              # .includes(location: :city)
-              # .includes(facets: :user)
-              # .includes(tag_facets: :tag)
-              # .includes(comment_facets: :comment)
-              # .includes(album_facets: :album)
-      render json: @photos, each_serializer: PhotoListSerializer, meta: get_pagination, include: "facets"
+            render json: @photos, each_serializer: PhotoListSerializer, meta: get_pagination, include: "facets"
     end
 
 # Single photo actions

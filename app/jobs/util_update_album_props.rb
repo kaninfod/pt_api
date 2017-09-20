@@ -1,4 +1,4 @@
-class UtilUpdateAlbumCount < AppJob
+class UtilUpdateAlbumProps < AppJob
   include Resque::Plugins::UniqueJob
   queue_as :utility
 
@@ -6,7 +6,14 @@ class UtilUpdateAlbumCount < AppJob
     begin
       Album.all.each do |album|
         size = album.album_photos.count
-        album.update(size: size)
+
+        if size > 0
+          cover_url = album.album_photos.first.url_md
+        else
+          cover_url = Photo.null_photo
+        end
+
+        album.update(size: size, cover_url: cover_url)
       end
 
       @job_db.update(jobable_id: nil, jobable_type: "Album")

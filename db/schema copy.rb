@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170830091348) do
+ActiveRecord::Schema.define(version: 20170919082259) do
 
   create_table "albums", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
     t.string "name"
@@ -27,6 +27,7 @@ ActiveRecord::Schema.define(version: 20170830091348) do
     t.boolean "like"
     t.boolean "has_comment"
     t.integer "size"
+    t.string "cover_url"
   end
 
   create_table "albums_photos", id: false, force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
@@ -55,6 +56,10 @@ ActiveRecord::Schema.define(version: 20170830091348) do
     t.string "name"
   end
 
+  create_table "comments", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
+    t.string "name"
+  end
+
   create_table "countries", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
     t.string "name"
   end
@@ -65,16 +70,14 @@ ActiveRecord::Schema.define(version: 20170830091348) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "type"
-    t.integer "source_id"
-    t.integer "source_comment_id"
+    t.bigint "source_id"
     t.index ["photo_id"], name: "index_facets_on_photo_id"
     t.index ["source_id"], name: "index_facets_on_source_id"
+    t.index ["type"], name: "index_facets_on_type"
     t.index ["user_id"], name: "fk_rails_a4bb3b7eb2"
   end
 
   create_table "instances", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
-    t.integer "photo_id"
-    t.integer "catalog_id"
     t.string "path"
     t.integer "size"
     t.datetime "modified"
@@ -82,7 +85,11 @@ ActiveRecord::Schema.define(version: 20170830091348) do
     t.string "rev"
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.index ["photo_id", "catalog_id"], name: "index_instances_on_photo_id_and_catalog_id", unique: true
+    t.bigint "facet_id"
+    t.string "photo_url"
+    t.string "photo_id"
+    t.string "instance_type"
+    t.index ["facet_id"], name: "index_instances_on_facet_id"
   end
 
   create_table "jobs", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
@@ -161,14 +168,10 @@ ActiveRecord::Schema.define(version: 20170830091348) do
     t.index ["thing_type", "thing_id", "var"], name: "index_settings_on_thing_type_and_thing_id_and_var", unique: true
   end
 
-  create_table "source_comments", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
-    t.string "name"
-  end
-
-  create_table "source_tags", id: :integer, force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
+  create_table "tags", id: :integer, force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
     t.string "name", collation: "utf8_bin"
     t.integer "taggings_count", default: 0
-    t.index ["name"], name: "index_source_tags_on_name", unique: true
+    t.index ["name"], name: "index_tags_on_name", unique: true
   end
 
   create_table "users", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|

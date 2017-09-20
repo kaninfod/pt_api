@@ -6,7 +6,9 @@ class AppJob < ActiveJob::Base
       job_type:   job.class.name,
       arguments:  job.arguments,
       queue:      job.queue_name,
-      status:     1 #started
+      status:     1, #started
+      jobable_id: 0,
+      jobable_type: "Photo"
     )
   end
 

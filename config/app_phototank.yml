@@ -1,6 +1,6 @@
 production:
   environment: production
-  instance_name: "Hinge"
+  instance_name: "Phototank_rpi"
   incoming: "/mnt/phototank/incoming"
   filestorepath: "/mnt/phototank/filestore"
   filestoreurl: "http://192.168.2.103"
@@ -8,7 +8,7 @@ production:
 
 development:
   environment: development
-  instance_name: "dev_Hinge"
+  instance_name: "dev_mac"
   incoming: "/media/phototank/incoming"
   filestorepath: "/media/phototank/filestore"
   filestoreurl: "http://localhost:5001"

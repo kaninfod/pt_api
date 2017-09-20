@@ -6,7 +6,7 @@ class LocalImportSpawn < AppJob
     begin
       catalog = Catalog.find(catalog_id)
       catalog.not_synchronized.each do |instance|
-        LocalImportPhotoJob.perform_later catalog_id, instance.photo_id
+        LocalImportPhotoJob.perform_later catalog_id, instance.photo.id
       end
       @job_db.update(jobable_id: catalog.id, jobable_type: "Catalog")
     rescue Exception => e

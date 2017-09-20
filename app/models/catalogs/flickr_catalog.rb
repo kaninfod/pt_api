@@ -1,6 +1,6 @@
 require 'flickraw'
 class FlickrCatalog < Catalog
-  before_destroy :delete_contents
+  # before_destroy :delete_contents
   serialize :ext_store_data, Hash
 
   def oauth_init
@@ -27,12 +27,11 @@ class FlickrCatalog < Catalog
 
   def oauth_callback(code)
     begin
-      byebug
       flickr = FlickRaw::Flickr.new
 
       request_token = self.request_token
       access_token = request_token[:oauth_token]
-      oauth_verifier = code #self.verifier
+      oauth_verifier = code
 
       raw_token = flickr.get_access_token(request_token['oauth_token'], request_token['oauth_token_secret'], oauth_verifier)
       # raw_token is a hash like this {"user_nsid"=>"92023420%40N00", "oauth_token_secret"=>"XXXXXX", "username"=>"boncey", "fullname"=>"Darren%20Greaves", "oauth_token"=>"XXXXXX"}
@@ -41,6 +40,7 @@ class FlickrCatalog < Catalog
       self.access_token = raw_token["oauth_token"]
       self.oauth_token_secret = raw_token["oauth_token_secret"]
       self.save
+      LocalCloneInstancesFromCatalogJob.perform_later self.id, self.sync_from_catalog
       return 1
     rescue Exception => e
       return 0
@@ -56,29 +56,27 @@ class FlickrCatalog < Catalog
 
   def import_photo(photo_id)
 
-    # pf = PhotoFilesApi::Api::new
-
     photo = Photo.find(photo_id)
-    instance = photo.instances.where(catalog_id: self.id).first
-    photofile = Photofile.find(photo.org_id) #pf.show(photo.org_id)
+    instance =  photo.catalog_facets.find_by(catalog: self).instance
+    photofile = Photofile.find(photo.org_id)
 
     if instance.status != 1
       #file = Tempfile.new("Flickr_")
       begin
-        #file.binmode
-        #file.write open(photofile[:url]).read
         src = photofile.path
-
         response = self.client.upload_photo src, :title=> photofile.path, :tags=>get_flickr_tags(photo_id)
 
-        #self.set_tags response, photo.id
-        instance.touch
-        instance.update(rev: response, status: 1)
+        # instance.touch
+        _path = "https://www.flickr.com/photos/mhinge/#{response}/"
+        instance.update(
+          instance_type: "flickr",
+          photo_url: _path,
+          photo_id: response,
+          modified: DateTime.now,
+          status: 1,
+          )
       rescue Exception => e
         raise e
-      ensure
-        #file.close
-        #file.unlink
       end
     end
   end
@@ -102,21 +100,19 @@ class FlickrCatalog < Catalog
     true if access_token
   end
 
-  def delete_contents
-    # triggered when entire catalog is deleted. This will delete all instances,
-    # and in turn the photos through delete_photo
-    instances.each do |instance|
-      instance.destroy
-    end
-  end
+  # def delete_contents
+  #   # triggered when entire catalog is deleted. This will delete all instances,
+  #   # and in turn the photos through delete_photo
+  #   instances.each do |instance|
+  #     instance.destroy
+  #   end
+  # end
 
   def delete_photo(photo_id)
     begin
-      instance = self.instances.where(photo_id: photo_id).first
-      if not instance.nil?
-        response = self.client.photos.delete :photo_id=>instance.rev
+      if not photo_id.nil?
+        return self.client.photos.delete :photo_id=>photo_id
       end
-      #instance.destroy
     rescue Exception => e
       logger.debug "#{e}"
     end

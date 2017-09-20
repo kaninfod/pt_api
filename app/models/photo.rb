@@ -19,6 +19,7 @@ class Photo < ActiveRecord::Base
   has_one  :location, through: :location_facet, foreign_key: :source_id
   has_many :tags,     through: :tag_facets,     foreign_key: :source_id
   has_many :comments, through: :comment_facets, foreign_key: :source_id
+  has_many :instances, through: :catalog_facets, foreign_key: :source_id
 
   has_many :jobs, as: :jobable
 
@@ -40,6 +41,7 @@ class Photo < ActiveRecord::Base
   def add_to_album(user, album_id)
     _album_facet = AlbumFacet.find_or_create_by(photo: self, source_id: album_id)
     _album_facet.update(photo: self, user: user, source_id: album_id)
+    UtilUpdateAlbumProps.perform_later
     self
   end
 
@@ -153,6 +155,24 @@ class Photo < ActiveRecord::Base
       .order("HAMMINGDISTANCE(#{self.phash}, phash)")
   end
 
+  def flickr_instance
+    facet = _remote_facet("FlickrCatalog")
+    #self.catalog_facets.joins(:catalog).find_by(catalogs: {type: "FlickrCatalog"})
+    if facet and facet.instance.status
+      facet.instance
+    end
+  end
+
+  def dropbox_instance
+    facet = facet = _remote_facet("DropboxCatalog")
+    # self.catalog_facets.joins(:catalog).find_by(catalogs: {type: "FlickrCatalog"})
+    if facet and facet.instance.status
+      facet.instance
+    end
+  end
+
+
+
   def similarity(photo)
     Phashion.hamming_distance(photo.phash.to_i, self.phash.to_i)
   end
@@ -207,6 +227,10 @@ class Photo < ActiveRecord::Base
   # end
 
   private
+    def _remote_facet(type)
+      self.catalog_facets.joins(:catalog).find_by(catalogs: {type: type})
+    end
+
     def move_by_date
       PhotoMoveByDate.perform_later self.id
     end

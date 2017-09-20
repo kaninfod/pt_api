@@ -11,20 +11,25 @@ namespace :phototank do
       }
       response = Photofile.create(data:payload)
       Setting["generic_image_#{ext}_id"] = response[:id]
-    end
 
-    # sql = """
-    #   DROP FUNCTION IF EXISTS `HAMMINGDISTANCE`;
-    #   CREATE DEFINER=`root`@`localhost` FUNCTION `HAMMINGDISTANCE`(A BINARY(32), B BINARY(32)) RETURNS int(11)
-    #       DETERMINISTIC
-    #   RETURN
-    #     BIT_COUNT(CONV(HEX(SUBSTRING(A, 1,  8)), 16, 10) ^CONV(HEX(SUBSTRING(B, 1,  8)), 16, 10))
-    #     +BIT_COUNT(  CONV(HEX(SUBSTRING(A, 9,  8)), 16, 10) ^  CONV(HEX(SUBSTRING(B, 9,  8)), 16, 10))
-    #     +BIT_COUNT(  CONV(HEX(SUBSTRING(A, 17, 8)), 16, 10) ^  CONV(HEX(SUBSTRING(B, 17, 8)), 16, 10))
-    #     +BIT_COUNT(  CONV(HEX(SUBSTRING(A, 25, 8)), 16, 10) ^  CONV(HEX(SUBSTRING(B, 25, 8)), 16, 10));
-    # """
-    #
-    # ActiveRecord::Base.connection.execute(sql)
+
+    end
+  end
+
+  desc "Create Hamming distance function"
+  task create_hamming: :environment do
+    sql = """
+      DROP FUNCTION IF EXISTS `HAMMINGDISTANCE`;
+      CREATE DEFINER=`root`@`localhost` FUNCTION `HAMMINGDISTANCE`(A BINARY(32), B BINARY(32)) RETURNS int(11)
+          DETERMINISTIC
+      RETURN
+        BIT_COUNT(CONV(HEX(SUBSTRING(A, 1,  8)), 16, 10) ^CONV(HEX(SUBSTRING(B, 1,  8)), 16, 10))
+        +BIT_COUNT(  CONV(HEX(SUBSTRING(A, 9,  8)), 16, 10) ^  CONV(HEX(SUBSTRING(B, 9,  8)), 16, 10))
+        +BIT_COUNT(  CONV(HEX(SUBSTRING(A, 17, 8)), 16, 10) ^  CONV(HEX(SUBSTRING(B, 17, 8)), 16, 10))
+        +BIT_COUNT(  CONV(HEX(SUBSTRING(A, 25, 8)), 16, 10) ^  CONV(HEX(SUBSTRING(B, 25, 8)), 16, 10));
+    """
+
+    ActiveRecord::Base.connection.execute(sql)
 
   end
 

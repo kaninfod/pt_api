@@ -7,16 +7,11 @@ class Album < ActiveRecord::Base
   validates :name, presence: true
   after_initialize :set_default_values
 
-  def cover_url
-    if self.size > 0
-      Photo.null_photo#self.album_photos.first.url_md
-    else
-      Photo.null_photo
-    end
-  end
-
   def album_photos
     @conditions = nil
+    append_condition(_start_date)
+    append_condition(_end_date)
+    append_condition(t_photo[:status].not_eq(1))
 
     if !(self.country.blank? || self.country == "-1")
       append_condition(location_condition)
@@ -32,58 +27,53 @@ class Album < ActiveRecord::Base
     end
 
     if self.id
-      append_condition(album_condition)
+      append_condition(album_condition, false)
     end
 
     if self.like
       append_condition(like_condition)
     end
 
-    result = base_query.where(@conditions)
-
-    # puts result.to_sql
+    result = Photo.where(@conditions)
     return result
 
   end
 
-  def append_condition(new_condition)
+  def append_condition(new_condition, and_operator=true)
     if !@conditions
       @conditions = new_condition
     else
-      @conditions = @conditions.and(new_condition)
+      if and_operator
+        @conditions = @conditions.and(new_condition)
+      else
+        @conditions = @conditions.or(new_condition)
+      end
     end
   end
 
-  def base_query()
-    Photo
-      .where(_start_date)
-      .where(_end_date)
-      .where(t_photo[:status].not_eq(1))
+  def photo_facet_join
+    t_photo[:id].eq(t_facet[:photo_id])
   end
 
   def tag_condition
     tag_ids = Tag.where(name: self.tags).pluck(:id)
-    _join = t_photo[:id].eq(t_facet[:photo_id])
     _condition = t_facet[:source_id].in(tag_ids).and(t_facet[:type].eq('TagFacet'))
-    t_facet.project('1').where(_join.and(_condition)).exists
+    t_facet.project('1').where(photo_facet_join.and(_condition)).exists
   end
 
   def album_condition
-    _join = t_photo[:id].eq(t_facet[:photo_id])
     _condition = t_facet[:source_id].eq(self.id).and(t_facet[:type].eq('AlbumFacet'))
-    t_facet.project('1').where(_join.and(_condition)).exists
+    t_facet.project('1').where(photo_facet_join.and(_condition)).exists
   end
 
   def like_condition
-    _join = t_photo[:id].eq(t_facet[:photo_id])
     _condition = t_facet[:type].eq('LikeFacet')
-    t_facet.project('1').where(_join.and(_condition)).exists
+    t_facet.project('1').where(photo_facet_join.and(_condition)).exists
   end
 
   def comment_condition
-    _join = t_photo[:id].eq(t_facet[:photo_id])
     _condition = t_facet[:type].eq('CommentFacet')
-    t_facet.project('1').where(_join.and(_condition)).exists
+    t_facet.project('1').where(photo_facet_join.and(_condition)).exists
   end
 
   def location_condition
@@ -92,18 +82,46 @@ class Album < ActiveRecord::Base
     elsif !(self.country.blank? || self.country == "-1")
       location_id = Location.find_by(country: self.country.to_i).id
     end
-    _join = t_photo[:id].eq(t_facet[:photo_id])
     _condition = t_facet[:source_id].eq(location_id).and(t_facet[:type].eq('LocationFacet'))
-    t_facet.project('1').where(_join.and(_condition)).exists
+    t_facet.project('1').where(photo_facet_join.and(_condition)).exists
   end
 
   def facet(type, source_id)
-    _join = t_photo[:id].eq(t_facet[:photo_id])
     _condition = t_facet[:source_id].eq(source_id).and(t_facet[:type].eq(type))
-    t_facet.project('1').where(_join.and(_condition))
+    t_facet.project('1').where(photo_facet_join.and(_condition))
   end
 
+  def _start_date
+    t_photo[:date_taken].gteq(self.start_date) unless self.start_date.blank?
+  end
 
+  def _end_date
+    t_photo[:date_taken].lteq(self.end_date) unless self.end_date.blank?
+  end
+
+  def _make
+    t_photo[:make].eq(self.make) unless self.make.blank?
+  end
+
+  def _tag
+    t_tag[:name].in(self.tags).and(t_facet[:type].eq('Tag')) unless self.tags.length == 0
+  end
+
+  def t_photo
+    Photo.arel_table
+  end
+
+  def t_facet
+    Facet.arel_table
+  end
+
+  private
+    def set_default_values
+      self.like ||= false
+      self.has_comment ||= false
+    end
+
+end
 
   # def mandatory_conditions
   #   photo_rules = [
@@ -166,13 +184,7 @@ class Album < ActiveRecord::Base
   # end
 
 
-  def _start_date
-    t_photo[:date_taken].gteq(self.start_date) unless self.start_date.blank?
-  end
 
-  def _end_date
-    t_photo[:date_taken].lteq(self.end_date) unless self.end_date.blank?
-  end
 
   # def _country
   #   t_location[:country_id].eq(self.country) unless (self.country.blank? || self.country == "-1")
@@ -182,13 +194,8 @@ class Album < ActiveRecord::Base
   #   t_location[:city_id].eq(self.city) unless (self.city.blank? || self.city == "-1")
   # end
 
-  def _make
-    t_photo[:make].eq(self.make) unless self.make.blank?
-  end
 
-  def _tag
-    t_tag[:name].in(self.tags).and(t_facet[:type].eq('Tag')) unless self.tags.length == 0
-  end
+
 
   # def _like
   #   t_facet[:type].eq("Like") unless self.like == false
@@ -233,17 +240,11 @@ class Album < ActiveRecord::Base
   # #   Arel::Table.new("albums_photos")
   # # end
 
-  def t_photo
-    Photo.arel_table
-  end
-
   # def t_location
   #   Location.arel_table
   # end
 
-  def t_facet
-    Facet.arel_table
-  end
+
 
   # def t_tag
   #   Arel::Table.new("tags")
@@ -252,11 +253,3 @@ class Album < ActiveRecord::Base
   # def t_comment
   #   Arel::Table.new("comments")
   # end
-
-  private
-    def set_default_values
-      self.like ||= false
-      self.has_comment ||= false
-    end
-
-end

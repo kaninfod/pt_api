@@ -4,11 +4,10 @@ class Catalog < ActiveRecord::Base
   serialize :watch_path, Array
   serialize :sync_from_albums, Array
 
-  has_many :facets, -> { where type: 'CatalogFacet' }, class_name: 'Facet', foreign_key: :source_id
+  has_many :facets, -> { where type: 'CatalogFacet' }, class_name: 'Facet', foreign_key: :source_id, dependent: :destroy
   has_many :photos, through: :facets, foreign_key: :source_id
+  has_many :instances, through: :facets, foreign_key: :source_id
 
-  # has_many :instances
-  # has_many :photos, through: :instances
   has_many :jobs, as: :jobable
   belongs_to  :user
 

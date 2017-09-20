@@ -12,25 +12,27 @@ class MasterImportPhoto < AppJob
       raise "File does not exist" unless File.exist?(import_path)
       data = import_flow(import_path, import_mode)
       data[:location] = Location.no_location
-      #If a photo id was supplied then update that photo
 
+      #If a photo id was supplied then update that photo
       if not photo_id
         photo = Photo.create!(data)
       else
         photo = Photo.find(photo_id)
       end
 
-      # instance = Instance.create(
-      #   photo_id: photo.id,
-      #   catalog_id: Catalog.master.id
-      # )
-
-      CatalogFacet.create(
+      facet = CatalogFacet.create(
         photo_id: photo.id,
-        catalog_id: Catalog.master.id,
+        source_id: Catalog.master.id,
         user: User.admin,
       )
 
+      facet.instance.update(
+        instance_type: "master",
+        photo_id: photo_id,
+        photo_url: photo.url_org,
+        status: 1,
+        modified: DateTime.now,
+      )
 
       UtilLocator.perform_later photo.id
       @job_db.update(jobable_id: photo.id, jobable_type: "Photo")
