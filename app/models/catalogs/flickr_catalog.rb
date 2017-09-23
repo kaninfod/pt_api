@@ -209,7 +209,7 @@ class FlickrCatalog < Catalog
   def get_flickr_tags(photo_id)
 
     instance_name = Rails.configuration.phototank["instance_name"]
-    "photo_id:#{photo_id} catalog_id:#{self.id} PHOTOTANK #{instance_name}"
+    "photo_id:#{photo_id} catalog_id:#{self.id} PHOTOTANK #{instance_name} catalog:#{self.name}"
   end
 
 end

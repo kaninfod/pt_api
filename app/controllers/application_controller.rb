@@ -25,6 +25,7 @@
 
 
    def authenticate_request
+     
      if params.has_key?(:token)
        request.headers["Authorization"] = params[:token]
      elsif params.has_key?(:Authorization)
