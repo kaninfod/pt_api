@@ -22,6 +22,7 @@
       :bucket_tag,
       :bucket_untag,
       :bucket_rotate,
+      :bucket_add_to_album,
     ]
 
     #GET /api/photos/
@@ -128,7 +129,7 @@
     # /api/photos/:id/bucket/toggle
     def bucket_toggle
       @photo.bucket_toggle current_user
-      render json: get_bucket
+      render json: @photo
     end
 
     # /api/photos/bucket/clear
@@ -160,6 +161,16 @@
 
       @bucket.each do |photo|
         photo.rotate(degrees)
+      end
+      render json: get_bucket
+    end
+
+    # POST /photos/bucket/add_to_album/
+    def bucket_add_to_album
+      album_id = params.require(:album_id)
+
+      @bucket.each do |photo|
+        photo.add_to_album album_id
       end
       render json: get_bucket
     end

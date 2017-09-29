@@ -15,6 +15,7 @@ Rails.application.routes.draw do
     post    '/photos/bucket/like'               => 'photos#bucket_like'
     post    '/photos/bucket/unlike'             => 'photos#bucket_unlike'
     post    '/photos/bucket/rotate/'            => 'photos#bucket_rotate'
+    post    '/photos/bucket/add_to_album/'      => 'photos#bucket_add_to_album'
     post    '/photos/bucket/tag/add'            => 'photos#bucket_tag'
     delete  '/photos/bucket/tag/delete'         => 'photos#bucket_untag'
     post    '/photos/bucket/comment/add'        => 'photos#bucket_comment'
