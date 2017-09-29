@@ -11,13 +11,14 @@ Rails.application.routes.draw do
     get     'pages' => 'pages#index'
     get     '/photos/taglist'                   => 'photos#taglist'
     get     '/photos/bucket'                    => 'photos#bucket'
+    post    '/photos/bucket/clear'              => 'photos#bucket_clear'
     post    '/photos/bucket/like'               => 'photos#bucket_like'
+    post    '/photos/bucket/unlike'             => 'photos#bucket_unlike'
     post    '/photos/bucket/rotate/'            => 'photos#bucket_rotate'
     post    '/photos/bucket/tag/add'            => 'photos#bucket_tag'
     delete  '/photos/bucket/tag/delete'         => 'photos#bucket_untag'
     post    '/photos/bucket/comment/add'        => 'photos#bucket_comment'
     delete  '/photos/bucket/comment/delete'     => 'photos#bucket_uncomment'
-
     resources :photos
     post    '/photos/:id/add_to_album'          => 'photos#add_to_album'
     post    '/photos/:id/rotate'                => 'photos#rotate'
@@ -25,7 +26,8 @@ Rails.application.routes.draw do
     delete  '/photos/:id/comment/delete'        => 'photos#uncomment'
     post    '/photos/:id/tag/add'               => 'photos#tag'
     delete  '/photos/:id/tag/delete'            => 'photos#untag'
-    post    '/photos/:id/like/toggle'           => 'photos#like_toggle'
+    post    '/photos/:id/like'                  => 'photos#like_toggle'
+    post    '/photos/:id/unlike'                => 'photos#like_toggle'
     post    '/photos/:id/bucket/toggle'         => 'photos#bucket_toggle'
 
     get     '/catalogs/oauth_callback'
@@ -36,26 +38,6 @@ Rails.application.routes.draw do
     get     '/locations/countries'
     get     '/locations/cities'
     resources :locations
-
-    # post    'bucket/:id/toggle'     => 'bucket#toggle'
-    # post    'bucket/:id/add'        => 'bucket#add'
-    # post    'bucket/add_to_album'   => 'bucket#add_to_album'
-    # delete  'bucket/:id/remove'     => 'bucket#remove'
-    # post    'bucket/like'           => 'bucket#like'
-    # get     'bucket/widget'         => 'bucket#widget'
-    # post    '/bucket/rotate'        => 'bucket#rotate'
-    # post    'bucket/add_comment'    => 'bucket#add_comment'
-    # post    'bucket/add_tag'    => 'bucket#add_tag'
-
-    # post    'bucket/unlike'         => 'bucket#unlike'
-    # get     'bucket/list' => 'bucket#list'
-    # get     'bucket' => 'bucket#index'
-    # get     'bucket/clear' => 'bucket#clear'
-    # get     'bucket/count' => 'bucket#count'
-    # get     'bucket/save' => 'bucket#save_to_album'
-    # get     'bucket/delete_photos' => 'bucket#delete_photos'
-    # get     'bucket/edit' => 'bucket#edit'
-    # patch   'bucket/update' => 'bucket#update'
 
     resources :photofiles
     get     'photofiles/:id/photoserve' => 'photofiles#photoserve'

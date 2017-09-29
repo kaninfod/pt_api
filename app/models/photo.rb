@@ -81,6 +81,14 @@ class Photo < ActiveRecord::Base
     self
   end
 
+  def like(user)
+    LikeFacet.find_or_create_by(photo: self, user: user)
+  end
+
+  def unlike(user)
+    self.like_facet.destroy if !self.like_facet.nil?
+  end
+
   def add_comment(user, comment)
     CommentFacet.create(
       photo: self,

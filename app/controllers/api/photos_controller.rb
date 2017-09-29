@@ -13,6 +13,16 @@
       :bucket_toggle,
       :tag, :untag
     ]
+    before_action :get_bucket, only: [
+      :bucket,
+      :bucket_like,
+      :bucket_unlike,
+      :bucket_comment,
+      :bucket_uncomment,
+      :bucket_tag,
+      :bucket_untag,
+      :bucket_rotate,
+    ]
 
     #GET /api/photos/
     def index
@@ -101,6 +111,100 @@
 
   # /api/photos/bucket
     def bucket
+      # @bucket = Photo
+      #         .joins(:facets)
+      #         .where('facets.type = ?', 'BucketFacet')
+      #         .where('facets.user_id = ?', current_user) #.includes(:facets, :location)
+      #         .includes(facets: :location)
+      #         .includes(facets: :tag)
+      #         .includes(facets: :user)
+      #         .includes(facets: :comment)
+      #         .includes(location: :city)
+      #         .includes(location: :country)
+
+      render json: @bucket
+    end
+
+    # /api/photos/:id/bucket/toggle
+    def bucket_toggle
+      @photo.bucket_toggle current_user
+      render json: get_bucket
+    end
+
+    # /api/photos/bucket/clear
+    def bucket_clear
+      BucketFacet.where(user: current_user).destroy_all
+      # @photo.bucket_clear current_user
+      render json: get_bucket
+    end
+
+    # /api/photos/bucket/like
+    def bucket_like
+      @bucket.each do |photo|
+        photo.like current_user
+      end
+      render json: get_bucket
+    end
+
+    # /api/photos/bucket/unlike
+    def bucket_unlike
+      @bucket.each do |photo|
+        photo.unlike current_user
+      end
+      render json: get_bucket
+    end
+
+    # POST /photos/bucket/rotate/
+    def bucket_rotate
+      degrees = params.require(:degrees)
+
+      @bucket.each do |photo|
+        photo.rotate(degrees)
+      end
+      render json: get_bucket
+    end
+
+    # POST /api/photos/bucket/tag/add
+    def bucket_tag
+      tag = params.require(:tag)
+      @bucket.each do |photo|
+        photo.add_tag current_user, tag
+      end
+      render json: get_bucket
+    end
+
+    # /api/photos/bucket/tag/delete
+    def bucket_untag
+      #tag_id is a facet_id!!
+      tag_id = params.require(:tag_id)
+      @bucket.each do |photo|
+        photo.untag tag_id
+      end
+      render json: get_bucket
+    end
+
+    # POST /api/photos/bucket/comment/add
+    def bucket_comment
+      comment = params.require(:comment)
+      @bucket.each do |photo|
+        photo.add_comment current_user, comment
+      end
+      render json: get_bucket
+    end
+
+    # DELETE /api/photos/bucket/comment/delete
+    def bucket_uncomment
+      #comment_id is a facet_id
+      comment_id = params.require(:comment_id)
+      @bucket.each do |photo|
+        photo.uncomment comment_id
+      end
+      render json: get_bucket
+    end
+
+    private
+
+    def get_bucket
       @bucket = Photo
               .joins(:facets)
               .where('facets.type = ?', 'BucketFacet')
@@ -112,74 +216,7 @@
               .includes(location: :city)
               .includes(location: :country)
 
-      render json: @bucket
-    end
-
-    # /api/photos/:id/bucket/toggle
-    def bucket_toggle
-      @photo.bucket_toggle current_user
-      render json: @photo
-    end
-
-    # /api/photos/bucket/like
-    def bucket_like
-      photo_ids = params.require(:photoIds)
-      @photos = Photo.find(photo_ids).map { |p| p.like current_user }
-      json_response(@photos)
-    end
-
-    # POST /photos/bucket/rotate/
-    def bucket_rotate
-      degrees = params.require(:degrees)
-      #@bucket = get_bucket
-      get_bucket.each do |bucket_facet|
-        bucket_facet.photo.rotate(degrees)
-      end
-      render json: @bucket
-    end
-
-    # POST /api/photos/bucket/tag/add
-    def bucket_tag
-      tag = params.require(:tag)
-      get_bucket.each do |bucket_facet|
-        bucket_facet.photo.add_tag current_user, tag
-      end
-      render json: @photo
-    end
-
-    # /api/photos/bucket/tag/delete
-    def bucket_untag
-      #tag_id is a facet_id!!
-      tag_id = params.require(:tag_id)
-      get_bucket.each do |bucket_facet|
-        bucket_facet.photo.untag tag_id
-      end
-      render json: @photo
-    end
-
-    # POST /api/photos/bucket/comment/add
-    def bucket_comment
-      comment = params.require(:comment)
-      get_bucket.each do |bucket_facet|
-        bucket_facet.photo.add_comment current_user, comment
-      end
-      render json: @photo
-    end
-
-    # DELETE /api/photos/bucket/comment/delete
-    def bucket_uncomment
-      #comment_id is a facet_id
-      comment_id = params.require(:comment_id)
-      get_bucket.each do |bucket_facet|
-        bucket_facet.photo.uncomment comment_id
-      end
-      render json: @photo
-    end
-
-    private
-
-    def get_bucket
-      BucketFacet.where(user: current_user)
+      # @bucket = BucketFacet.where(user: current_user)
     end
 
     def get_pagination
