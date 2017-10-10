@@ -6,11 +6,10 @@ class FlickrCatalog < Catalog
   def oauth_init
     self.appkey = Rails.configuration.flickr["appkey"]
     self.appsecret = Rails.configuration.flickr["appsecret"]
-
     base_url = Rails.configuration.phototank["api_base_url"]
     url_ext = "/api/catalogs/oauth_callback"
     params = "?catalog_id=#{self.id}&token=#{self.user.token}"
-    self.redirect_uri = "#{base_url}#{url_ext}#{params}"
+    self.redirect_uri = "#{self.redirect_uri}#{url_ext}#{params}"
 
     FlickRaw.api_key=self.appkey
     FlickRaw.shared_secret = self.appsecret
@@ -61,12 +60,11 @@ class FlickrCatalog < Catalog
     photofile = Photofile.find(photo.org_id)
 
     if instance.status != 1
-      #file = Tempfile.new("Flickr_")
+
       begin
         src = photofile.path
         response = self.client.upload_photo src, :title=> photofile.path, :tags=>get_flickr_tags(photo_id)
 
-        # instance.touch
         _path = "https://www.flickr.com/photos/mhinge/#{response}/"
         instance.update(
           instance_type: "flickr",

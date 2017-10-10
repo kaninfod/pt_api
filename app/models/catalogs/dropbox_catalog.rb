@@ -14,10 +14,10 @@ class DropboxCatalog < Catalog
     authorize_url = "https://www.dropbox.com/oauth2/authorize"
     client_id = "client_id=#{self.appkey}"
     response_type = "response_type=code"
-    redirect_uri = "redirect_uri=#{redirect_base_url}#{redirect_url_ext}"
+    self.redirect_uri = "redirect_uri=#{redirect_base_url}#{redirect_url_ext}"
     state = self.id
 
-    self.auth_url = "#{authorize_url}?#{client_id}&#{response_type}&#{redirect_uri}&state=#{state}"
+    self.auth_url = "#{authorize_url}?#{client_id}&#{response_type}&#{self.redirect_uri}&state=#{state}"
     self.save
     return self
   end
