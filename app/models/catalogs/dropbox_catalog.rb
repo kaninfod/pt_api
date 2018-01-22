@@ -84,7 +84,6 @@ class DropboxCatalog < Catalog
 
   def delete_photo(photo_id)
     begin
-      byebug
       if not photo_id.nil?
         self.client.file_delete photo_id
       end

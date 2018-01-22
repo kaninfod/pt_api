@@ -112,18 +112,7 @@
 
   # /api/photos/bucket
     def bucket
-      # @bucket = Photo
-      #         .joins(:facets)
-      #         .where('facets.type = ?', 'BucketFacet')
-      #         .where('facets.user_id = ?', current_user) #.includes(:facets, :location)
-      #         .includes(facets: :location)
-      #         .includes(facets: :tag)
-      #         .includes(facets: :user)
-      #         .includes(facets: :comment)
-      #         .includes(location: :city)
-      #         .includes(location: :country)
-
-      render json: @bucket
+      render json: @bucket, each_serializer: PhotoListSerializer
     end
 
     # /api/photos/:id/bucket/toggle
