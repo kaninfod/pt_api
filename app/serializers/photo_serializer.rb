@@ -6,7 +6,7 @@ class PhotoSerializer < ActiveModel::Serializer
       id = object.id
       {
         self: api_photo_path(id),
-        location: api_location_path(object.location_facet.id),
+        # location: api_location_path(object.location_facet.id),
       }
     end
 

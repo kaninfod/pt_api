@@ -77,10 +77,10 @@ class UtilLocator < AppJob
   end
 
   def geosearch
+    
     if geo_location = Geocoder.search(@photo.coordinate_string).first
       if geo_location.data["error"].blank?
         new_location = Location.new
-
         new_location.country = Country.find_or_create_by(name: geo_location.country)
         new_location.city = City.find_or_create_by(name: geo_location.city)
         # new_location.suburb = geo_location.suburb

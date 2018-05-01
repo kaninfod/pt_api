@@ -1,18 +1,7 @@
-version: '3'
+version: '3.1'
 
 services:
-  # nginx:
-  #   image: nginx
-  #   depends_on:
-  #     - api
-  #   ports:
-  #     - "80:8080"
-  #   networks:
-  #     - phototankswarm
-  #   env_file: .env.dev
-  #   volumes:
-  #     - ./frontend/nginx/conf.d:/etc/nginx/conf.d
-  #     - ./frontend/public:/www
+
 
   db:
     image: mysql
@@ -24,6 +13,16 @@ services:
     volumes:
       - ./sql:/var/lib/mysql
 
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
+    depends_on:
+      - db
+    networks:
+      - phototankswarm
+
   redis:
     image: redis
     networks:
@@ -32,14 +31,14 @@ services:
   api:
     tty: true
     stdin_open: true
-    image: pt-rails:v12
+    image: pt-rails:v13
     env_file: .env.dev
     networks:
       - phototankswarm
     entrypoint: ./bin/rails.sh
     volumes:
-      - /Users/martinhinge/Pictures/docker/phototank:/media/phototank
-      - ./pt_api:/usr/src/app
+      - /Users/mhe/Pictures/docker/phototank:/media/phototank
+      - ./:/usr/src/app
     ports:
       - "3000:3000"
     depends_on:
@@ -51,10 +50,10 @@ services:
     tty: true
     stdin_open: true
     entrypoint: ./bin/resque.sh
-    image: pt-rails:v12
+    image: pt-rails:v13
     volumes:
-      - /Users/martinhinge/Pictures/docker/phototank:/media/phototank
-      - ./pt_api:/usr/src/app
+      - /Users/mhe/Pictures/docker/phototank:/media/phototank
+      - ./:/usr/src/app
     networks:
       - phototankswarm
     links:
