@@ -27,7 +27,6 @@
 
     #GET /api/photos/
     def index
-
       @album_hash = {}
       @order = "desc"
       get_album_hash
@@ -38,7 +37,7 @@
               .includes(:facets)
               .order(date_taken: @order)
               .paginate(:page => params[:page], :per_page=>params[:photosPerPage])
-            render json: @photos, each_serializer: PhotoListSerializer, meta: get_pagination, include: "facets"
+      render json: @photos, each_serializer: PhotoListSerializer, meta: get_pagination, include: "facets"
     end
 
 # Single photo actions

@@ -7,7 +7,7 @@
     Resque.logger.info("starting now...R")
     begin
       require 'find'
-      dir_blacklist = ['existing']
+      dir_blacklist = ['existing', 'done']
       ext_whitelist = ['.jpg', '.JPG']
       UtilSetSetting.perform_later 'MasterCatalog', Catalog.master.id, 'updating', true
       Find.find(path) do |path|

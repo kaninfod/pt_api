@@ -112,9 +112,13 @@ class MasterImportPhoto < AppJob
       #Put the original photo in photofile
       @data[:org_id] = create_pf("org")
 
-      #Delete the source if import_mode is set
+      #Delete the source if import_mode is set, else move it to done folder
       if import_mode
         FileUtils.rm path
+      else
+        _p = File.join(File.dirname(path), 'done')
+        FileUtils.mkdir_p _p
+        FileUtils.mv path, _p
       end
 
     ensure

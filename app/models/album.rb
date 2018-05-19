@@ -10,8 +10,12 @@ class Album < ActiveRecord::Base
   def album_photos
     @conditions = nil
     append_condition(_start_date)
-    append_condition(_end_date)
+    # append_condition(_end_date)
     append_condition(t_photo[:status].not_eq(1))
+
+    if !self.end_date.blank?
+      append_condition(_end_date)
+    end
 
     if !(self.country.blank? || self.country == "-1")
       append_condition(location_condition)

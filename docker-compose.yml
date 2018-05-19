@@ -31,7 +31,7 @@ services:
   api:
     tty: true
     stdin_open: true
-    image: pt-rails:v13
+    image: pt-rails:v15
     env_file: .env.dev
     networks:
       - phototankswarm
@@ -50,7 +50,7 @@ services:
     tty: true
     stdin_open: true
     entrypoint: ./bin/resque.sh
-    image: pt-rails:v13
+    image: pt-rails:v15
     volumes:
       - /Users/mhe/Pictures/docker/phototank:/media/phototank
       - ./:/usr/src/app
