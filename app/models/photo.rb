@@ -1,6 +1,6 @@
 class Photo < ActiveRecord::Base
   validate :date_taken_is_valid_datetime
-
+  before_save :default_values
   before_update :move_by_date, if: :date_taken_changed?
 
   # belongs_to :location, default: -> { Location.no_location }
@@ -117,6 +117,11 @@ class Photo < ActiveRecord::Base
     if _tag.present?
       _tag.first.destroy
     end
+  end
+
+  def default_values
+    self.make ||= 'Unknown' 
+    self.model ||= 'Unknown'
   end
 
   def date_taken_is_valid_datetime
